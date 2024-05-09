@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  postman:
+    image: postman/newman:latest
+    command:
+      run test_postman_collection.json -k --environment=localhost.postman_environment.json
+            -r cli,json ##htmlextra,cli,json
+    #  --reporter-htmlextra-export="reports/Template-Integration-Test.html"
+    #  --reporter-json-export="reports/Template-Integration-Test.json"
+    volumes:
+      - ./collections:/etc/newman
+      
+networks:
+  bbt-development:
+    external: true
