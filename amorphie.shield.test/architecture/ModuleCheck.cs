@@ -8,7 +8,7 @@ public class ModuleCheck
 {
     public dynamic GetModules()
     {
-        var types = Types.InAssembly(typeof(StudentModule).Assembly);
+        var types = Types.InAssembly(typeof(CertModule).Assembly);
         return types.That().ResideInNamespace("amorphie.shield.Module");
     }
 

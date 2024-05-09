@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "c087242f-c5f8-470e-978a-322292609521",
-		"name": "Template-Integration-Test",
+		"name": "shield-Integration-Test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "17057612",
 		"_collection_link": "https://red-shadow-543286.postman.co/workspace/Integration-Test~e64ac9cf-2581-4551-912f-5ed44db9355d/collection/17057612-c087242f-c5f8-470e-978a-322292609521?action=share&creator=17057612&source=collection_link"

@@ -2,12 +2,12 @@
 
 # Zeebe Standalone Broker configuration file (with embedded gateway)
 
-# This file is based on broker.standalone.yaml.template but stripped down to contain only a limited
+# This file is based on broker.standalone.yaml.shield but stripped down to contain only a limited
 # set of configuration options. These are a good starting point to get to know Zeebe.
-# For advanced configuration options, have a look at the templates in this folder.
+# For advanced configuration options, have a look at the shields in this folder.
 
 # !!! Note that this configuration is not suitable for running a standalone gateway. !!!
-# If you want to run a standalone gateway node, please have a look at gateway.yaml.template
+# If you want to run a standalone gateway node, please have a look at gateway.yaml.shield
 
 # ----------------------------------------------------
 # Byte sizes
@@ -91,7 +91,7 @@ zeebe:
         className: io.zeebe.redis.exporter.RedisExporter
         jarPath: exporters/zeebe-redis-exporter-jar-with-dependencies.jar
         args:
-                remoteAddress: redis://bbt-template-redis:6379
+                remoteAddress: redis://bbt-shield-redis:6379
                 # Redis Stream prefix
                 name: "zeebe"
                 # record serialization format: [protobuf|json]
@@ -101,7 +101,7 @@ zeebe:
         className: io.camunda.zeebe.exporter.ElasticsearchExporter
 
         args:
-          url: http://bbt-template-elastic:9200
+          url: http://bbt-shield-elastic:9200
 
           bulk:
             delay: 5
@@ -113,7 +113,7 @@ zeebe:
 
           index:
             prefix: zeebe-record
-            createTemplate: true
+            createshield: true
 
             command: false
             event: true

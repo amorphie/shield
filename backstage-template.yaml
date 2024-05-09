@@ -1,11 +1,11 @@
 # Notice the v1beta3 version
 apiVersion: scaffolder.backstage.io/v1beta3
-kind: Template
-# some metadata about the template itself
+kind: shield
+# some metadata about the shield itself
 metadata:
-  name: amorphie-software-template-for-github
-  title: Amorphie Software Template to Publish Github Repo
-  description: amorphie altyapisini kullanacak servisler icin hazırlanan template
+  name: amorphie-software-shield-for-github
+  title: Amorphie Software shield to Publish Github Repo
+  description: amorphie altyapisini kullanacak servisler icin hazırlanan shield
 spec:
   owner: integration
   type: service
@@ -67,7 +67,7 @@ spec:
         files:
           - .deepsource.toml
           - .github
-          - backstage-template.yaml
+          - backstage-shield.yaml
     - id: publish
       name: Publish
       action: publish:github

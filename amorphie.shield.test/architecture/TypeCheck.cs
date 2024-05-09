@@ -9,7 +9,7 @@ public class TypeCheck
     [Fact]
     public void CheckIfAnyStatic()
     {
-        var types = Types.InAssembly(typeof(StudentModule).Assembly);
+        var types = Types.InAssembly(typeof(CertModule).Assembly);
 
         var result = types.Should().BeStatic()
                         .GetResult()
