@@ -5,18 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using amorphie.shield.core.Search;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
-using amorphie.core.Swagger;
-using Microsoft.OpenApi.Models;
 using amorphie.core.Identity;
-using Asp.Versioning;
-using Asp.Versioning.Builder;
 using amorphie.core.Extension;
 using amorphie.shield.core.Dto.Certificate;
 using amorphie.shield.app.CertManager;
 using System.Security.Cryptography.X509Certificates;
+using amorphie.shield.app.Db;
+using amorphie.shield.core.Extension;
 
 namespace amorphie.shield.Module;
-
 
 public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, ShieldDbContext>
 {
@@ -34,6 +31,7 @@ public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, Shiel
 
         routeGroupBuilder.MapGet("/search", SearchMethod);
         routeGroupBuilder.MapGet("/client-cert", GetClientCert);
+        routeGroupBuilder.MapPost("/save", SaveAsync);
     }
     protected override ValueTask<IResult> UpsertMethod([FromServices] IMapper mapper, [FromServices] FluentValidation.IValidator<Certificate> validator, [FromServices] ShieldDbContext context, [FromServices] IBBTIdentity bbtIdentity, [FromBody] CertificateDto data, HttpContext httpContext, CancellationToken token)
     {
@@ -42,9 +40,6 @@ public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, Shiel
     protected async ValueTask<IResult> GetClientCert(
         [FromServices] ShieldDbContext context,
         [FromServices] CertificateManager certManager
-
-
-
         )
     {
         var ca = CaProvider.CaCert;
@@ -52,6 +47,17 @@ public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, Shiel
         var cert = certificate.ExportCer();
         var privateKey = certificate.GetRSAPrivateKey().ExportPrivateKey();
         return Results.Ok((cert, privateKey));
+    }
+    protected async ValueTask<IResult> SaveAsync(
+        [FromBody] CertificateCreateRequestDto certificateCreateRequest,
+        [FromServices] CertificateService certificateService,
+        [FromServices] CertificateManager certManager
+        )
+    {
+        var ca = CaProvider.CaCert;
+        var certificate = certManager.Create(ca, certificateCreateRequest.UserTCKN, "testClient", "password");
+        var dbResponse = await certificateService.SaveAsync(certificateCreateRequest, certificate);
+        return ApiResult.CreateResult(dbResponse);
     }
 
     protected async ValueTask<IResult> SearchMethod(
