@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using amorphie.shield.ExceptionHandling;
 
 
 
@@ -79,9 +80,10 @@ builder.Services.AddDbContext<ShieldDbContext>
     (options => options.UseNpgsql(postgreSql, b => b.MigrationsAssembly("amorphie.shield.data")));
 
 builder.Services.AddManagerServices();
+builder.Services.AddExceptionHandler<ExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
-
 
 using var scope = app.Services.CreateScope();
 var db = scope.ServiceProvider.GetRequiredService<ShieldDbContext>();
@@ -119,7 +121,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseExceptionHandler();
 app.AddRoutes();
 
 //app.MapHealthChecks("/healthz", new HealthCheckOptions

@@ -2,19 +2,48 @@ using amorphie.core.Base;
 
 namespace amorphie.shield.core.Model;
 
-public class TransactionActivity : EntityBase
+/// <summary>
+/// Transaction Activity
+/// It keeps a log of every status change that occurs for the transaction.
+/// </summary>
+public sealed class TransactionActivity : EntityBase
 {
-    internal TransactionActivity()
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    private TransactionActivity()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        
+        //For ORM
     }
-    public Guid TransactionId { get; set; }
-    public Transaction Transaction { get; set; } = default!;
-    public Guid? XRequestId { get; set; }
-    public string Data { get; set; } = "";
+
+    internal TransactionActivity(
+        Guid transactionId,
+        Guid requestId,
+        string payloadData,
+        TransactionStatus status
+    )
+    {
+        TransactionId = transactionId;
+        RequestId = requestId;
+        Data = payloadData;
+        Status = status;
+    }
+    
+    /// <summary>
+    /// <see cref="Transaction"/> Id
+    /// </summary>
+    public Guid TransactionId { get; private set; }  
+    /// <summary>
+    /// Request Id
+    /// </summary>
+    public Guid RequestId { get; private set; }
+    /// <summary>
+    /// Payload Data
+    /// </summary>
+    public string Data { get; private set; }
 
     /// <summary>
-    /// waiting, signed
+    /// Status
+    /// Waiting, Signed
     /// </summary>
-    public string? Status { get; set; }
+    public TransactionStatus Status { get; private set; }
 }

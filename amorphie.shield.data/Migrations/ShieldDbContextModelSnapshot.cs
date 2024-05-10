@@ -29,6 +29,7 @@ namespace amorphie.shield.data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Cn")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -66,27 +67,14 @@ namespace amorphie.shield.data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StatusReason")
                         .HasColumnType("text");
 
                     b.Property<string>("ThumbPrint")
                         .HasColumnType("text");
-
-                    b.Property<string>("UserTCKN")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("XDeviceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("XRequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("XTokenId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -127,21 +115,19 @@ namespace amorphie.shield.data.Migrations
                     b.Property<Guid?>("ModifiedByBehalfOf")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("SignSignature")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("SignedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("XRequestId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CertificateId");
 
                     b.ToTable("Transactions");
                 });
@@ -174,42 +160,66 @@ namespace amorphie.shield.data.Migrations
                     b.Property<Guid?>("ModifiedByBehalfOf")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TransactionId")
+                    b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("XRequestId")
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TransactionId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("TransactionId");
 
-                    b.ToTable("TransactionActivity");
+                    b.ToTable("TransactionActivities");
                 });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Transaction", b =>
+            modelBuilder.Entity("amorphie.shield.core.Model.Certificate", b =>
                 {
-                    b.HasOne("amorphie.shield.core.Model.Certificate", "Certificate")
-                        .WithMany()
-                        .HasForeignKey("CertificateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.OwnsOne("amorphie.shield.core.Model.Identity", "Identity", b1 =>
+                        {
+                            b1.Property<Guid>("CertificateId")
+                                .HasColumnType("uuid");
 
-                    b.Navigation("Certificate");
+                            b1.Property<Guid>("DeviceId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("DeviceId");
+
+                            b1.Property<Guid>("RequestId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("RequestId");
+
+                            b1.Property<Guid>("TokenId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("TokenId");
+
+                            b1.Property<string>("UserTCKN")
+                                .IsRequired()
+                                .HasMaxLength(11)
+                                .HasColumnType("character varying(11)")
+                                .HasColumnName("UserTCKN");
+
+                            b1.HasKey("CertificateId");
+
+                            b1.ToTable("Certificates");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CertificateId");
+                        });
+
+                    b.Navigation("Identity")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("amorphie.shield.core.Model.TransactionActivity", b =>
                 {
-                    b.HasOne("amorphie.shield.core.Model.Transaction", "Transaction")
+                    b.HasOne("amorphie.shield.core.Model.Transaction", null)
                         .WithMany("Activities")
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("amorphie.shield.core.Model.Transaction", b =>

@@ -27,11 +27,11 @@ public class CertificateService
             .FirstOrDefaultAsync(w => w.Id == data.Id);
         if (existingRecord == null)
         {
-            var cert = new Certificate
-            {
-                Id = data.Id,
-                PublicCert = data.PublicCert
-            };
+            // var cert = new Certificate
+            // {
+            //     Id = data.Id,
+            //     PublicCert = data.PublicCert
+            // };
         }
         else
         {

@@ -18,24 +18,24 @@ public static class DbInitializer
             return; // DB has been seeded
         }
         // Adding 20 Certificate objects to the list
-        for (int i = 1; i <= 20; i++)
-        {
-            var certificate = new Certificate
-            {
-                PublicCert = $"Certificate {i} Data",
-                SerialNumber = $"Serial Number {i}",
-                Status = i % 2 == 0 ? "Active" : "Passive",
-                RevocationDate = DateTime.UtcNow.AddDays(i),
-                ExpirationDate = DateTime.UtcNow.AddDays(i * 10),
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = Guid.NewGuid(),
-                ModifiedAt = DateTime.UtcNow,
-                ModifiedBy = Guid.NewGuid()
-            };
-            context.Certificates.Add(certificate);
-        }
+        // for (int i = 1; i <= 20; i++)
+        // {
+        //     var certificate = new Certificate
+        //     {
+        //         PublicCert = $"Certificate {i} Data",
+        //         SerialNumber = $"Serial Number {i}",
+        //         Status = i % 2 == 0 ? "Active" : "Passive",
+        //         RevocationDate = DateTime.UtcNow.AddDays(i),
+        //         ExpirationDate = DateTime.UtcNow.AddDays(i * 10),
+        //         CreatedAt = DateTime.UtcNow,
+        //         CreatedBy = Guid.NewGuid(),
+        //         ModifiedAt = DateTime.UtcNow,
+        //         ModifiedBy = Guid.NewGuid()
+        //     };
+        //     context.Certificates.Add(certificate);
+        // }
 
-        context.SaveChanges();
+        // context.SaveChanges();
 
 
     }
