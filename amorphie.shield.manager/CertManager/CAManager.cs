@@ -11,7 +11,7 @@ public class CaManager
 
     public CaManager() { }
     public static CaManager Instance { get; private set; } = new CaManager();
-    public CertificateCreateDto Create(string cn, string password)
+    public X509Certificate2 Create(string cn, string password)
     {
         // using (var rsaProvider = RSA.Create(4096))
         using (var rsaProvider = new RSACryptoServiceProvider(4096))
@@ -30,18 +30,7 @@ public class CaManager
             // Export the client certificate to a PFX file
             var clientCertBytes = certificate.Export(X509ContentType.Cert, password);
 
-            certificate.ExportPfx("ca", password);
-            certificate.ExportCer("ca");
-            rsaProvider.ExportPublicKey("ca");
-            rsaProvider.ExportPrivateKey("ca");
-
-            var caDto = new CertificateCreateDto
-            {
-                PublicCert = certificate.ExportCer(),
-                PrivateKey = rsaProvider.ExportPrivateKey(),
-                Cert = certificate,
-            };
-            return caDto;
+            return certificate;
         }
     }
 

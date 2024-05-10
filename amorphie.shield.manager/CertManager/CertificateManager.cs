@@ -1,19 +1,18 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-using amorphie.shield.core.Dto.Certificate;
+using amorphie.shield.core.Extension;
 
 namespace amorphie.shield.app.CertManager;
 public class CertificateManager
 {
     public X509Certificate2 Create(X509Certificate2 caCert, string identifier, string certName, string password)
     {
-        
-
         // Create a new RSA provider for the client certificate
         // using (var rsaProvider = RSA.Create(4096))
 
-        //string certCN = $"{identifier}.{caCert.CN()}";
         string certCN = $"{caCert.CN()}";
+        if (!string.IsNullOrEmpty(identifier))
+            certCN = $"{identifier}.{certCN}";
 
         using (var rsaProvider = RSA.Create(4096))
         {
