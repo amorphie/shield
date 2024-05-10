@@ -31,4 +31,19 @@
     <ProjectReference Include="..\amorphie.shield.data\amorphie.shield.data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Certficate\ca.cer">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Certficate\ca.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Certficate\ca.private.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Certficate\ca.public.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

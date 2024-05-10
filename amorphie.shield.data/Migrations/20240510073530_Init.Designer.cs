@@ -12,20 +12,20 @@ using amorphie.shield.data;
 namespace amorphie.shield.data.Migrations
 {
     [DbContext(typeof(ShieldDbContext))]
-    [Migration("20230602081915_EntityBaseSupport")]
-    partial class EntityBaseSupport
+    [Migration("20240510073530_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.5")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Course", b =>
+            modelBuilder.Entity("amorphie.shield.core.Model.Certificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,8 +40,11 @@ namespace amorphie.shield.data.Migrations
                     b.Property<Guid?>("CreatedByBehalfOf")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Credits")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("ExpirationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCa")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("timestamp with time zone");
@@ -52,22 +55,51 @@ namespace amorphie.shield.data.Migrations
                     b.Property<Guid?>("ModifiedByBehalfOf")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("PrivateKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PublicCert")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("RevocationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TabPrint")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserTCKN")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("XDeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("XRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("XTokenId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Certificates");
                 });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Enrollment", b =>
+            modelBuilder.Entity("amorphie.shield.core.Model.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CourseId")
+                    b.Property<Guid>("CertificateId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -79,53 +111,7 @@ namespace amorphie.shield.data.Migrations
                     b.Property<Guid?>("CreatedByBehalfOf")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("Grade")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ModifiedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ModifiedByBehalfOf")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("Enrollments");
-                });
-
-            modelBuilder.Entity("amorphie.shield.core.Model.Student", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CreatedByBehalfOf")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("EnrollmentDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FirstMidName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
+                    b.Property<string>("EncryptedData")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -140,36 +126,20 @@ namespace amorphie.shield.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students");
+                    b.HasIndex("CertificateId");
+
+                    b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Enrollment", b =>
+            modelBuilder.Entity("amorphie.shield.core.Model.Transaction", b =>
                 {
-                    b.HasOne("amorphie.shield.core.Model.Course", "Course")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("CourseId")
+                    b.HasOne("amorphie.shield.core.Model.Certificate", "Certificate")
+                        .WithMany()
+                        .HasForeignKey("CertificateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("amorphie.shield.core.Model.Student", "Student")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("amorphie.shield.core.Model.Course", b =>
-                {
-                    b.Navigation("Enrollments");
-                });
-
-            modelBuilder.Entity("amorphie.shield.core.Model.Student", b =>
-                {
-                    b.Navigation("Enrollments");
+                    b.Navigation("Certificate");
                 });
 #pragma warning restore 612, 618
         }

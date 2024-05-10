@@ -11,11 +11,13 @@ using amorphie.core.Identity;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using amorphie.core.Extension;
+using amorphie.shield.core.Dto.Certificate;
+using amorphie.shield.app.CertManager;
 
 namespace amorphie.shield.Module;
 
 
-public sealed class CertModule : BaseBBTRoute<CertificateDTO, Certificate, ShieldDbContext>
+public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, ShieldDbContext>
 {
     public CertModule(WebApplication app)
         : base(app) { }
@@ -30,47 +32,23 @@ public sealed class CertModule : BaseBBTRoute<CertificateDTO, Certificate, Shiel
         base.AddRoutes(routeGroupBuilder);
 
         routeGroupBuilder.MapGet("/search", SearchMethod);
-        routeGroupBuilder.MapGet("/custom-method", CustomMethod);
-
-
-        #region versioning
-
-        ApiVersionSetBuilder apiVersionSetBuilder = new("Version1");
-        apiVersionSetBuilder.HasApiVersion(new ApiVersion(1, 0));
-        ApiVersionSet apiVersionSet = apiVersionSetBuilder.Build();
-
-
-        routeGroupBuilder.MapGet("/v{version:apiVersion}/hello", () => "Hello from API URL version 1")
-            .WithApiVersionSet(apiVersionSet)
-            .HasApiVersion(new ApiVersion(1, 0));
-        // [AddSwaggerParameterAttribute("X-Api-Version",ParameterLocation.Header,true)] 
-        routeGroupBuilder.MapGet("/hello1", () => "Hello from API URL version 2")
-            .WithApiVersionSet(apiVersionSet)
-            .HasApiVersion(new ApiVersion(2, 0))
-.HasApiVersion(new ApiVersion(1, 0));
-
-
-        #endregion
-        /*
-
-                routeGroupBuilder.MapGet("v{version:apiVersion}/version1", (HttpContext context) =>
-        {
-            var apiVersion = context.GetRequestedApiVersion();
-
-            return "Version " + apiVersion?.MajorVersion?.ToString();
-        })
-            .WithApiVersionSet( new Asp.Versioning.Builder.ApiVersionSetBuilder("Version1") {  new ApiVersion(1, 0) });
-            .HasApiVersion(new ApiVersion(1, 0));
-        */
+        routeGroupBuilder.MapGet("/client-cert", GetClientCert);
     }
-    protected override ValueTask<IResult> UpsertMethod([FromServices] IMapper mapper, [FromServices] FluentValidation.IValidator<Certificate> validator, [FromServices] ShieldDbContext context, [FromServices] IBBTIdentity bbtIdentity, [FromBody] CertificateDTO data, HttpContext httpContext, CancellationToken token)
+    protected override ValueTask<IResult> UpsertMethod([FromServices] IMapper mapper, [FromServices] FluentValidation.IValidator<Certificate> validator, [FromServices] ShieldDbContext context, [FromServices] IBBTIdentity bbtIdentity, [FromBody] CertificateDto data, HttpContext httpContext, CancellationToken token)
     {
         return base.UpsertMethod(mapper, validator, context, bbtIdentity, data, httpContext, token);
     }
-    [AddSwaggerParameter("Test Required", ParameterLocation.Header, true)]
-    protected async ValueTask<IResult> CustomMethod()
+    protected async ValueTask<IResult> GetClientCert(
+        [FromServices] ShieldDbContext context,
+        [FromServices] CertificateManager certManager
+
+
+
+        )
     {
-        return Results.Ok();
+        var ca = CaProvider.CaCert;
+        var certificate = certManager.Create(ca, "", "testClient", "password");
+        return Results.Ok(certificate.PrivateKey);
     }
 
     protected async ValueTask<IResult> SearchMethod(
@@ -86,7 +64,7 @@ public sealed class CertModule : BaseBBTRoute<CertificateDTO, Certificate, Shiel
              .AsNoTracking()
              .Where(
                  x =>
-                     x.CertificateData.Contains(userSearch.Keyword!)
+                     x.PublicCert.Contains(userSearch.Keyword!)
                      || x.PrivateKey.Contains(userSearch.Keyword!)
              )
              .Sort<Certificate>("PrivateKey", SortDirectionEnum.Asc);
@@ -98,7 +76,7 @@ public sealed class CertModule : BaseBBTRoute<CertificateDTO, Certificate, Shiel
 .ToListAsync(token);
 
         return (resultList != null && resultList.Count > 0)
-            ? Results.Ok(mapper.Map<IList<CertificateDTO>>(resultList))
+            ? Results.Ok(mapper.Map<IList<CertificateDto>>(resultList))
             : Results.NoContent();
     }
 

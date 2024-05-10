@@ -6,7 +6,7 @@ public sealed class CertificateValidator : AbstractValidator<Certificate>
 {
     public CertificateValidator()
     {
-        RuleFor(x => x.CertificateData).NotNull();
+        RuleFor(x => x.PublicCert).NotNull();
         RuleFor(x => x.Status).MinimumLength(10);
     }
 }

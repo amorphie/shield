@@ -1,17 +1,14 @@
 using System.Text.Json.Serialization;
 using amorphie.core.Extension;
-using amorphie.core.HealthCheck;
 using amorphie.core.Identity;
 using amorphie.core.Swagger;
 using amorphie.shield.data;
 using amorphie.shield.Swagger;
 using amorphie.shield.Validator;
-using amorphie.template.HealthCheck;
+using amorphie.shield.app;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using FluentValidation;
-using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -56,8 +53,8 @@ builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.WriteIndented = true;
 });
 
-builder.Services.AddDaprClient();
-builder.Services.AddHealthChecks().AddBBTHealthCheck();
+//builder.Services.AddDaprClient();
+//builder.Services.AddHealthChecks().AddBBTHealthCheck();
 
 builder.Services.AddScoped<IBBTIdentity, FakeIdentity>();
 
@@ -81,6 +78,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<CertificateValidator>(inclu
 builder.Services.AddDbContext<ShieldDbContext>
     (options => options.UseNpgsql(postgreSql, b => b.MigrationsAssembly("amorphie.shield.data")));
 
+builder.Services.AddManagerServices();
 
 var app = builder.Build();
 
@@ -124,10 +122,10 @@ app.UseHttpsRedirection();
 
 app.AddRoutes();
 
-app.MapHealthChecks("/healthz", new HealthCheckOptions
-{
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+//app.MapHealthChecks("/healthz", new HealthCheckOptions
+//{
+//    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+//});
 app.MapMetrics();
 
 app.Run();
