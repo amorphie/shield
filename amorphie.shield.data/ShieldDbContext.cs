@@ -26,9 +26,6 @@ class ShieldDbContextFactory : IDesignTimeDbContextFactory<ShieldDbContext>
     public ShieldDbContext CreateDbContext(string[] args)
     {
         var builder = new DbContextOptionsBuilder<ShieldDbContext>();
-        // var test = _configuration["STATE_STORE"];
-        // System.Console.WriteLine("Test: " + test);
-
 
         var connStr = "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres";
         builder.UseNpgsql(connStr);

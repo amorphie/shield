@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\amorphie.shield.data\amorphie.shield.data.csproj" />
     <ProjectReference Include="..\amorphie.shield.core\amorphie.shield.core.csproj" />
+    <ProjectReference Include="..\amorphie.shield.manager\amorphie.shield.app.csproj" />
   </ItemGroup>
 
 </Project>

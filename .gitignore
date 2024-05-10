@@ -355,3 +355,9 @@ MigrationBackup/
 # Ignore test results
 tests/collections/newman
 tests/collections/reports
+
+#Cert Files
+*.cer
+*.key
+*.pfx
+*.pem

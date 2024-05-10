@@ -1,17 +1,20 @@
 ﻿using amorphie.shield.app.CertManager;
-using amorphie.shield.core.Dto.CaDto;
+using amorphie.shield.core.Dto.Certificate;
 
 namespace amorphie.shield.test.app;
-public class CAManagerTests
+public class CaManagerTests
 {
     [Fact]
-    public void Create_RetursCaCreateDto_WhenCaCreated()
+    public void Create_ReturnsCaCreateDto_WhenCaCreated()
     {
-        var caManager = new CAManager();
-        var result = caManager.Create();
+        var cn = "dev.ca.burganbank";
+        var password = "password";
+
+        var caManager = new CaManager();
+        var result = caManager.Create(cn, password);
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<CaCreateDto>(result);
+        Assert.IsType<CertificateCreateDto>(result);
     }
 }
 

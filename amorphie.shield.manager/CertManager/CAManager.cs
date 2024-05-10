@@ -1,65 +1,99 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using amorphie.shield.core.Dto.CaDto;
+using amorphie.shield.core.Dto.Certificate;
 
 namespace amorphie.shield.app.CertManager;
-public class CAManager
+public class CaManager
 {
-    public CAManager() { }
-    public CaCreateDto Create()
+    private readonly string password = "password";
+    private readonly string caPfxFileName = Path.Combine("Certficate", "ca.pfx");
+
+
+    public CaManager() { }
+    public static CaManager Instance { get; private set; } = new CaManager();
+    public CertificateCreateDto Create(string cn, string password)
     {
-        using (var rsaProvider = RSA.Create(4096))
+        // using (var rsaProvider = RSA.Create(4096))
+        using (var rsaProvider = new RSACryptoServiceProvider(4096))
         {
             // Create a new certificate request for the CA certificate
-            var request = new CertificateRequest(new X500DistinguishedName("CN=ca.burganbank, OU=Digital Banking, O=Burgan Bank Turkey, C=TR"), rsaProvider, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            var request = new CertificateRequest(new X500DistinguishedName($"CN={cn}, OU=Digital Banking, O=Burgan Bank Turkey, C=TR"), rsaProvider, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
             // Set the Basic Constraints extension to indicate that this is a CA certificate
             request.CertificateExtensions.Add(
                 new X509BasicConstraintsExtension(true, true, 0, true));
 
             // Self-sign the certificate request
-            var certificate = request.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(5));
+            var certificate = request.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(10));
 
-            if (!certificate.HasPrivateKey)
+
+            // Export the client certificate to a PFX file
+            var clientCertBytes = certificate.Export(X509ContentType.Cert, password);
+
+            certificate.ExportPfx("ca", password);
+            certificate.ExportCer("ca");
+            rsaProvider.ExportPublicKey("ca");
+            rsaProvider.ExportPrivateKey("ca");
+
+            var caDto = new CertificateCreateDto
             {
-                // Copy private key
-                certificate = certificate.CopyWithPrivateKey(rsaProvider);
-            }
-            // Export the CA certificate to a PFX file
-            var caCertBytes = certificate.Export(X509ContentType.Pfx, "password");
-
-            // Save the CA certificate to a file
-            File.WriteAllBytes("ca.pfx", caCertBytes);
-
-            // Export the certificate in PEM format
-            var certPem = "-----BEGIN CERTIFICATE-----\r\n" +
-                          Convert.ToBase64String(certificate.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks) +
-                          "\r\n-----END CERTIFICATE-----";
-
-            // Export the private key in PEM format
-            var rsaPrivateKey = rsaProvider.ExportRSAPrivateKey();
-            var keyPem = "-----BEGIN RSA PRIVATE KEY-----\r\n" +
-                         Convert.ToBase64String(rsaPrivateKey, Base64FormattingOptions.InsertLineBreaks) +
-                         "\r\n-----END RSA PRIVATE KEY-----";
-
-            // Save the certificate and private key to PEM files
-            File.WriteAllText("ca.pem", certPem);
-            File.WriteAllText("ca.key", keyPem);
-            var caDto = new CaCreateDto
-            {
-                CaPem = certPem,
-                RsaPem = keyPem,
-                Cert=certificate,
+                PublicCert = certificate.ExportCer(),
+                PrivateKey = rsaProvider.ExportPrivateKey(),
+                Cert = certificate,
             };
-
-
-
             return caDto;
+        }
+    }
+
+    public X509Certificate2 GetFromPfx()
+    {
+        var caCert = new X509Certificate2(caPfxFileName, password);
+        return caCert;
+    }
+
+    public X509Certificate2 TryConcretePfxFromKeys()
+    {
+        var abyPublicKey = File.ReadAllBytes("ca.cer");
+        var abyPrivateKey = File.ReadAllText("ca.private_raw.key");
+        var certificate = new X509Certificate2(abyPublicKey, string.Empty,
+            X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+
+        var rsa = RSA.Create();
+        rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(abyPrivateKey), out _);
+
+        certificate.PrivateKey = rsa;
+        return certificate;
+    }
+
+
+    private void readprivatekey()
+    {
+        // Create a FileStream for the file
+        using (FileStream fileStream = new FileStream("ca.private_raw.key", FileMode.Open, FileAccess.Read))
+        {
+            // Create a BinaryReader using the FileStream
+            using (BinaryReader reader = new BinaryReader(fileStream))
+            {
+                // Now you can use the BinaryReader to read binary data from the file
+                try
+                {
+                    // Example: Read an integer from the file
+                    int intValue = reader.ReadInt32();
+                    Console.WriteLine($"Read integer value: {intValue}");
+
+                    // Example: Read a string from the file
+                    string stringValue = reader.ReadString();
+                    Console.WriteLine($"Read string value: {stringValue}");
+                }
+                catch (EndOfStreamException)
+                {
+                    Console.WriteLine("End of file reached.");
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"Error reading from file: {ex.Message}");
+                }
+            }
         }
     }
 }

@@ -33,8 +33,6 @@ public class PdfSignManager
     }
     public AsymmetricCipherKeyPair? GetCertKeyPair()
     {
-        string input = "dummy.pdf";
-        string output = "dummy_sign.pdf";
         string keystorePath = @"client.pfx";
         string password = "password";
 
@@ -42,9 +40,6 @@ public class PdfSignManager
         {
             // Load certificate and private key
             X509Certificate2 cert = new X509Certificate2(keystorePath, password);
-
-            // Convert certificate to BouncyCastle format
-            Org.BouncyCastle.X509.X509Certificate bcCert = DotNetUtilities.FromX509Certificate(cert);
             return DotNetUtilities.GetKeyPair(cert.GetRSAPrivateKey());
         }
         catch (Exception ex)

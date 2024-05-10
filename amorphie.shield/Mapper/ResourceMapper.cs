@@ -1,3 +1,4 @@
+using amorphie.shield.core.Dto.Certificate;
 using amorphie.shield.core.Model;
 using AutoMapper;
 
@@ -6,6 +7,6 @@ public sealed class ResourceMapper : Profile
 {
     public ResourceMapper()
     {
-        CreateMap<Certificate, CertificateDTO>().ReverseMap();
+        CreateMap<Certificate, CertificateDto>().ReverseMap();
     }
 }
