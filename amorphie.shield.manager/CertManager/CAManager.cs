@@ -39,50 +39,5 @@ public class CaManager
         return caCert;
     }
 
-    public X509Certificate2 TryConcretePfxFromKeys()
-    {
-        var abyPublicKey = File.ReadAllBytes("ca.cer");
-        var abyPrivateKey = File.ReadAllText("ca.private_raw.key");
-        var certificate = new X509Certificate2(abyPublicKey, string.Empty,
-            X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
-
-        var rsa = RSA.Create();
-        rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(abyPrivateKey), out _);
-
-        certificate.PrivateKey = rsa;
-        return certificate;
-    }
-
-
-    private void readprivatekey()
-    {
-        // Create a FileStream for the file
-        using (FileStream fileStream = new FileStream("ca.private_raw.key", FileMode.Open, FileAccess.Read))
-        {
-            // Create a BinaryReader using the FileStream
-            using (BinaryReader reader = new BinaryReader(fileStream))
-            {
-                // Now you can use the BinaryReader to read binary data from the file
-                try
-                {
-                    // Example: Read an integer from the file
-                    int intValue = reader.ReadInt32();
-                    Console.WriteLine($"Read integer value: {intValue}");
-
-                    // Example: Read a string from the file
-                    string stringValue = reader.ReadString();
-                    Console.WriteLine($"Read string value: {stringValue}");
-                }
-                catch (EndOfStreamException)
-                {
-                    Console.WriteLine("End of file reached.");
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"Error reading from file: {ex.Message}");
-                }
-            }
-        }
-    }
 }
 

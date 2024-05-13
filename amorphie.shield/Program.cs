@@ -116,6 +116,7 @@ app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.AddRoutes();
 app.MapCertificateModuleEndpoints();
+app.MapRevokeModuleEndpoints();
 app.RegisterTransactionEndpoints();
 
 //app.MapHealthChecks("/healthz", new HealthCheckOptions
