@@ -1,16 +1,9 @@
-﻿using System;
-using System.ComponentModel.Design;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using iText.Kernel.Font;
+﻿using System.Security.Cryptography.X509Certificates;
 using iText.Kernel.Pdf;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Signers;
-using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.X509;
-namespace amorphie.shield.app.SignManager;
+
+namespace amorphie.shield.SignManager;
 public class PdfSignManager
 {
     public PdfDocument? LoadPdf()

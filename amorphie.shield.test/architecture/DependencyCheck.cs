@@ -1,7 +1,7 @@
 using amorphie.core.Module.minimal_api;
 using NetArchTest.Rules;
 
-namespace amorphie.shield.test.architecture;
+namespace amorphie.shield.architecture;
 
 public class DependencyCheck
 {

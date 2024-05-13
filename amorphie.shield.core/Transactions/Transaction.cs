@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using amorphie.core.Base;
 
-namespace amorphie.shield.core.Model;
+namespace amorphie.shield.Transactions;
 
 /// <summary>
 /// Transaction Aggregate
@@ -21,7 +21,6 @@ public sealed class Transaction : EntityBase
         Guid? instanceId,
         Guid requestId,
         string payloadData
-        
     ){
         CertificateId = certificateId;
         InstanceId = instanceId;
@@ -31,6 +30,8 @@ public sealed class Transaction : EntityBase
         Activities = new Collection<TransactionActivity>();
         AddActivity(requestId, payloadData);
     }
+
+    //TODO: Tayfun: Payload dataya nonce kod eklenecek.
 
     /// <summary>
     /// Certificate Id

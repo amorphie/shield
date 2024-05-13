@@ -1,7 +1,7 @@
-﻿using amorphie.shield.app.CertManager;
-using amorphie.shield.core.Dto.Certificate;
+﻿using amorphie.shield.Certificates;
+using amorphie.shield.CertManager;
 
-namespace amorphie.shield.test.app;
+namespace amorphie.shield.app;
 public class CaManagerTests
 {
     [Fact]

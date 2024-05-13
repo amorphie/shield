@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-using amorphie.shield.core.Dto.Certificate;
 
-namespace amorphie.shield.app.CertManager;
+namespace amorphie.shield.CertManager;
 public class CaManager
 {
     private readonly string password = "password";

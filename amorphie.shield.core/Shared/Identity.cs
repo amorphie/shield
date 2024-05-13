@@ -1,4 +1,4 @@
-namespace amorphie.shield.core.Model
+namespace amorphie.shield.Shared
 {
     public class Identity : ValueObject
     {

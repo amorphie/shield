@@ -1,13 +1,13 @@
 using System.Security.Cryptography.X509Certificates;
 using amorphie.core.Base;
 
-namespace amorphie.shield.core.Dto.Certificate;
+namespace amorphie.shield.Certificates;
 
 public class CertificateCreateDto : DtoBase
 {
-    public Guid? XDeviceId { get; set; }
-    public Guid? XTokenId { get; set; }
-    public Guid? XRequestId { get; set; }
+    public Guid? DeviceId { get; set; }
+    public Guid? TokenId { get; set; }
+    public Guid? RequestId { get; set; }
     public string? PublicCert { get; set; }
     public string? PrivateKey { get; set; }
     public string? UserTCKN { get; set; }

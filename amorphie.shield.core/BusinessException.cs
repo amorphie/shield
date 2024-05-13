@@ -1,4 +1,4 @@
-namespace amorphie.shield.core
+namespace amorphie.shield
 {
     public class BusinessException : Exception
     {

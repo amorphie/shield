@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using amorphie.shield.core.Model;
-
-namespace amorphie.shield.data;
+namespace amorphie.shield;
 
 public static class DbInitializer
 {

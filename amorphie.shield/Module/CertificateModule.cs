@@ -1,23 +1,19 @@
-using amorphie.shield.core.Model;
+using System.Security.Cryptography.X509Certificates;
 using amorphie.core.Module.minimal_api;
-using amorphie.shield.data;
 using Microsoft.AspNetCore.Mvc;
-using amorphie.shield.core.Search;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using amorphie.core.Identity;
 using amorphie.core.Extension;
-using amorphie.shield.core.Dto.Certificate;
-using amorphie.shield.app.CertManager;
-using System.Security.Cryptography.X509Certificates;
-using amorphie.shield.app.Db;
-using amorphie.shield.core.Extension;
+using amorphie.shield.Certificates;
+using amorphie.shield.CertManager;
+using amorphie.shield.Extension;
 
 namespace amorphie.shield.Module;
 
-public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, ShieldDbContext>
+public sealed class CertificateModule : BaseBBTRoute<CertificateDto, Certificate, ShieldDbContext>
 {
-    public CertModule(WebApplication app)
+    public CertificateModule(WebApplication app)
         : base(app) { }
 
     public override string[]? PropertyCheckList => new string[] { "FirstMidName", "LastName" };
@@ -50,13 +46,10 @@ public sealed class CertModule : BaseBBTRoute<CertificateDto, Certificate, Shiel
     }
     protected async ValueTask<IResult> SaveAsync(
         [FromBody] CertificateCreateRequestDto certificateCreateRequest,
-        [FromServices] CertificateService certificateService,
-        [FromServices] CertificateManager certManager
+        [FromServices] ICertificateAppService certificateService
         )
     {
-        var ca = CaProvider.CaCert;
-        var certificate = certManager.Create(ca, certificateCreateRequest.UserTCKN, "testClient", "password");
-        var dbResponse = await certificateService.SaveAsync(certificateCreateRequest, certificate);
+        var dbResponse = await certificateService.CreateAsync(certificateCreateRequest);
         return ApiResult.CreateResult(dbResponse);
     }
 

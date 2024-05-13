@@ -1,6 +1,6 @@
 using amorphie.core.Base;
 
-namespace amorphie.shield.core.Model;
+namespace amorphie.shield.Transactions;
 
 /// <summary>
 /// Transaction Activity

@@ -1,5 +1,4 @@
 ﻿using amorphie.core.Base;
-using Microsoft.AspNetCore.Mvc;
 
 namespace amorphie.shield
 {
