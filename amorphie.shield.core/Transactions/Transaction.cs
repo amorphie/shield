@@ -21,7 +21,6 @@ public sealed class Transaction : EntityBase
         Guid? instanceId,
         Guid requestId,
         string payloadData
-        
     ){
         CertificateId = certificateId;
         InstanceId = instanceId;
