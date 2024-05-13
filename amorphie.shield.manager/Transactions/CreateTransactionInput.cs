@@ -13,11 +13,13 @@ public class CreateTransactionOutput
 {
     public CreateTransactionOutput(
         Guid transactionId,
+        Dictionary<string, object> rawData,
         string encrptData
     )
     {
         TransactionId = transactionId;
         EncrptData = encrptData;
+        RawData = rawData;
     }
 
     public Guid TransactionId { get; set; }
@@ -26,6 +28,8 @@ public class CreateTransactionOutput
     /// Raw data (with nonce) ecnr.
     /// </summary>
     public string EncrptData { get; set; }
+
+    public Dictionary<string, object> RawData { get; set; }
 }
 
 public class VerifyTransactionInput
