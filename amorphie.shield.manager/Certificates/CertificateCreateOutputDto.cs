@@ -2,7 +2,7 @@ using amorphie.core.Base;
 
 namespace amorphie.shield.Certificates;
 
-public class CertificateCreateResponseDto : DtoBase
+public class CertificateCreateOutputDto : DtoBase
 {
     public string? Certificate { get; set; }
     public string? PrivateKey { get; set; }
