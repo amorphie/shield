@@ -1,5 +1,5 @@
 using amorphie.core.Base;
-using amorphie.shield.manager.Shared;
+using amorphie.shield.Shared;
 
 namespace amorphie.shield.Certificates;
 

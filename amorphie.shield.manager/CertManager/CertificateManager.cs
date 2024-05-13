@@ -44,6 +44,29 @@ public class CertificateManager
         }
     }
 
+    public string Encrypt(string publicPhase, string payloadData)
+    {
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+        {
+            byte[] dataToEncrypt = System.Text.Encoding.UTF8.GetBytes(payloadData);
+            rsa.ImportParameters(ConvertPublicKeyStringToRSAParameters(publicPhase));
+            return  Convert.ToBase64String(rsa.Encrypt(dataToEncrypt, false));
+        }
+    }
+
+    private RSAParameters ConvertPublicKeyStringToRSAParameters(string publicKeyString)
+    {
+        byte[] publicKeyBytes = Convert.FromBase64String(publicKeyString);
+        RSAParameters publicKey = new RSAParameters();
+        using (var stream = new System.IO.MemoryStream(publicKeyBytes))
+        {
+            var reader = new System.IO.BinaryReader(stream);
+            publicKey.Modulus = reader.ReadBytes(reader.ReadInt32());
+            publicKey.Exponent = reader.ReadBytes(reader.ReadInt32());
+        }
+        return publicKey;
+    }
+
     // Generate a new serial number for a certificate
     byte[] GenerateSerialNumber()
     {

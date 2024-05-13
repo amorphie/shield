@@ -1,57 +1,75 @@
 using amorphie.shield.Transactions;
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace amorphie.shield.ExceptionHandling
+namespace amorphie.shield.ExceptionHandling;
+
+public class ExceptionHandler : IExceptionHandler
 {
-    public class ExceptionHandler : IExceptionHandler
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception,
+        CancellationToken cancellationToken)
     {
-        public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+        if (exception is TransactionSignedException)
         {
-            if (exception is TransactionSignedException)
-            {
-                var transactionException = exception as TransactionSignedException;
-                httpContext.Response.StatusCode = transactionException!.Code;
-                await httpContext.Response.WriteAsJsonAsync(
-                    new ServiceErrorResponse(
-                        new ServiceErrorInfo()
-                        {
-                            Code = transactionException.Code,
-                            Severity = transactionException.Severity,
-                            Message = transactionException.Message,
-                            Details = transactionException.Details
-                        }
-                    )
-                );
-            } 
-            else if (exception is BusinessException)
-            {
-                var transactionException = exception as BusinessException;
-                httpContext.Response.StatusCode = transactionException!.Code;
-                await httpContext.Response.WriteAsJsonAsync(
-                    new ServiceErrorResponse(
-                        new ServiceErrorInfo()
-                        {
-                            Code = transactionException.Code,
-                            Severity = transactionException.Severity,
-                            Message = transactionException.Message,
-                            Details = transactionException.Details
-                        }
-                    )
-                );
-            }
-            else
-            {
-                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                await httpContext.Response.WriteAsJsonAsync(
-                    new ServiceErrorResponse(
-                        new ServiceErrorInfo()
-                        {
-                            Message = exception.Message
-                        }
-                    )
-                );
-            }
-            return true;
+            var transactionException = exception as TransactionSignedException;
+            httpContext.Response.StatusCode = transactionException!.Code;
+            await httpContext.Response.WriteAsJsonAsync(
+                new ServiceErrorResponse(
+                    new ServiceErrorInfo()
+                    {
+                        Code = transactionException.Code,
+                        Severity = transactionException.Severity,
+                        Message = transactionException.Message,
+                        Details = transactionException.Details
+                    }
+                )
+            );
         }
+        if (exception is EntityNotFoundException)
+        {
+            var entityNotFoundException = exception as EntityNotFoundException;
+            httpContext.Response.StatusCode = entityNotFoundException!.Code;
+            
+            await httpContext.Response.WriteAsJsonAsync(
+                new ServiceErrorResponse(
+                    new ServiceErrorInfo()
+                    {
+                        Code = entityNotFoundException.Code,
+                        Severity = entityNotFoundException.Severity,
+                        Message = entityNotFoundException.Message,
+                        Details = entityNotFoundException.Details
+                    }
+                )
+            );
+        }
+        else if (exception is BusinessException)
+        {
+            var transactionException = exception as BusinessException;
+            httpContext.Response.StatusCode = transactionException!.Code;
+            await httpContext.Response.WriteAsJsonAsync(
+                new ServiceErrorResponse(
+                    new ServiceErrorInfo()
+                    {
+                        Code = transactionException.Code,
+                        Severity = transactionException.Severity,
+                        Message = transactionException.Message,
+                        Details = transactionException.Details
+                    }
+                )
+            );
+        }
+        else
+        {
+            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            await httpContext.Response.WriteAsJsonAsync(
+                new ServiceErrorResponse(
+                    new ServiceErrorInfo()
+                    {
+                        Message = exception.Message
+                    }
+                )
+            );
+        }
+
+        return true;
     }
 }

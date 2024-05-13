@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.ObjectModel;
 using amorphie.core.Base;
 
@@ -21,7 +20,8 @@ public sealed class Transaction : EntityBase
         Guid? instanceId,
         Guid requestId,
         string payloadData
-    ){
+    )
+    {
         CertificateId = certificateId;
         InstanceId = instanceId;
         RequestId = requestId;
@@ -37,32 +37,39 @@ public sealed class Transaction : EntityBase
     /// Certificate Id
     /// </summary>
     public Guid CertificateId { get; private set; }
+
     /// <summary>
     /// Instance Id
     /// </summary>
     public Guid? InstanceId { get; private set; }
+
     /// <summary>
     /// Request Id
     /// </summary>
     public Guid RequestId { get; private set; }
+
     /// <summary>
     /// Client Payload Data
     /// </summary>
     public string Data { get; private set; }
+
     /// <summary>
     /// Sign Signature
     /// </summary>
     public string? SignSignature { get; private set; }
+
     /// <summary>
     /// SignedAt
     /// </summary>
     public DateTime? SignedAt { get; private set; }
+
     /// <summary>
     /// Status
     /// Waiting, Signed, Rejected
     /// Status = Waiting olanlar => signed olacak sadece
     /// </summary>
     public TransactionStatus Status { get; private set; }
+
     /// <summary>
     /// Activities
     /// </summary>
@@ -75,14 +82,32 @@ public sealed class Transaction : EntityBase
     /// <param name="payloadData">Payload Data</param>
     /// <param name="signSignature">Sign Signature</param>
     /// <exception cref="TransactionSignedException"></exception>
-    public void Signed(Guid requestId, string payloadData, string signSignature){
-        if(Status != TransactionStatus.Waiting){
+    public void Verified(Guid requestId, string payloadData, string signSignature)
+    {
+        if (Status != TransactionStatus.Waiting)
+        {
+            throw new TransactionWaitingException();
+        }
+
+        if (Data != payloadData)
+        {
             throw new TransactionSignedException();
-        }   
+        }
+
+        if (SignSignature != signSignature)
+        {
+            throw new TransactionSignedException();
+        }
+
         SignedAt = DateTime.UtcNow;
-        Status = TransactionStatus.Signed;    
+        Status = TransactionStatus.Signed;
         SignSignature = signSignature;
         AddActivity(requestId, payloadData);
+    }
+
+    public void SignSignatured(string signSignatureData)
+    {
+        SignSignature = signSignatureData;
     }
 
     /// <summary>
@@ -91,25 +116,29 @@ public sealed class Transaction : EntityBase
     /// <param name="requestId">Request Id</param>
     /// <param name="payloadData">Payload Data</param>
     /// <exception cref="TransactionRejectedException"></exception>
-    public void Rejected(Guid requestId, string payloadData){
-        if(Status != TransactionStatus.Rejected){
+    public void Rejected(Guid requestId, string payloadData)
+    {
+        if (Status != TransactionStatus.Rejected)
+        {
             throw new TransactionRejectedException();
-        }   
-        Status = TransactionStatus.Rejected;    
+        }
+
+        Status = TransactionStatus.Rejected;
         AddActivity(requestId, payloadData);
     }
 
     private void AddActivity(
         Guid requestId,
         string payloadData
-    ){
+    )
+    {
         Activities!.Add(
             new TransactionActivity(
-                Id, 
-                requestId, 
+                Id,
+                requestId,
                 payloadData,
                 Status
-                )
-            );
+            )
+        );
     }
 }
