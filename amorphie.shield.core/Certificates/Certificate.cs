@@ -98,5 +98,4 @@ public sealed class Certificate : EntityBase
         RevocationDate = DateTime.UtcNow;
         StatusReason = reason;
     }
-    
 }

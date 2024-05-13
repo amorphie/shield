@@ -1,84 +1,51 @@
-using amorphie.shield.manager.Shared;
+using amorphie.shield.Shared;
 
-namespace amorphie.shield.Transactions
+namespace amorphie.shield.Transactions;
+
+public class CreateTransactionInput
 {
-    public class CreateTransactionInput
+    public required IdentityDto Identity { get; set; }
+    public Guid? InstanceId { get; set; }
+    public Dictionary<string, object>? Data { get; set; }
+}
+
+public class CreateTransactionOutput
+{
+    public CreateTransactionOutput(
+        Guid transactionId,
+        string encrptData
+    )
     {
-        public required IdentityDto Identity { get; set; }
-        public Guid? InstanceId { get; set; }
-        public required dynamic Data { get; set; }
+        TransactionId = transactionId;
+        EncrptData = encrptData;
     }
 
-    public class CreateTransactionOutput : ResponseBaseInput<CreateTransactionDto>
+    public Guid TransactionId { get; set; }
+
+    /// <summary>
+    /// Raw data (with nonce) ecnr.
+    /// </summary>
+    public string EncrptData { get; set; }
+}
+
+public class VerifyTransactionInput
+{
+    public required IdentityDto Identity { get; set; }
+
+    /// <summary>
+    /// Raw data (with nonce)
+    /// </summary>
+    public required Dictionary<string, object> RawData { get; set; }
+
+    public required string SignData { get; set; }
+}
+
+public class VerifyTransactionOutput
+{
+    public VerifyTransactionOutput(bool verified)
     {
-
-        public static CreateTransactionOutput Success(CreateTransactionDto transaction)
-        {
-            return new CreateTransactionOutput
-            {
-                Status = "success",
-                Data = transaction
-            };
-        }
-
-        public static CreateTransactionOutput Failed(CreateTransactionDto transaction)
-        {
-            return new CreateTransactionOutput
-            {
-                Status = "error",
-                Data = transaction
-            };
-        }
+        Verified = verified;
     }
 
-    public class CreateTransactionDto
-    {
-        public CreateTransactionDto(
-            Guid transactionId,
-            string encrptData
-        )
-        {
-            TransactionId = transactionId;
-            EncrptData = encrptData;
-        }
-
-        public Guid TransactionId { get; set; }
-        public string EncrptData { get; set; }
-    }
-
-    public class VerifyTransactionInput
-    {
-        public required IdentityDto Identity { get; set; }
-        public string SignData { get; set; }
-    }
-
-    public class VerifyTransactionOutput : ResponseBaseInput<VerifyTransactionDto>
-    {
-        public static VerifyTransactionOutput Success(VerifyTransactionDto verifyTransaction)
-        {
-            return new VerifyTransactionOutput
-            {
-                Status = "success",
-                Data = verifyTransaction
-            };
-        }
-
-        public static VerifyTransactionOutput Failed(VerifyTransactionDto verifyTransaction)
-        {
-            return new VerifyTransactionOutput
-            {
-                Status = "error",
-                Data = verifyTransaction
-            };
-        }
-    }
-
-    public class VerifyTransactionDto
-    {
-        public VerifyTransactionDto(bool verified)
-        {
-            Verified = verified;
-        }
-        public bool Verified { get; set; }
-    }
+    public bool Verified { get; set; }
 }

@@ -1,18 +1,15 @@
-namespace amorphie.shield.Certificates
-{
-    public class NonActiveCertificateException : BusinessException
-    {
-        public NonActiveCertificateException()
-        {
-            
-        }
-    }
+namespace amorphie.shield.Certificates;
 
-     public class ExpiredCertificateException : BusinessException
+public class NonActiveCertificateException : BusinessException
+{
+    public NonActiveCertificateException()
     {
-        public ExpiredCertificateException()
-        {
-            
-        }
+    }
+}
+
+public class ExpiredCertificateException : BusinessException
+{
+    public ExpiredCertificateException()
+    {
     }
 }

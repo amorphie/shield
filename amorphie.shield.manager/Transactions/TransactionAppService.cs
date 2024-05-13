@@ -1,64 +1,61 @@
 using System.Text.Json;
+using amorphie.core.Base;
 using amorphie.shield.Certificates;
+using amorphie.shield.CertManager;
 
-namespace amorphie.shield.Transactions
+namespace amorphie.shield.Transactions;
+
+public class TransactionAppService : ITransactionAppService
 {
-    public class TransactionAppService : ITransactionAppService
+    private readonly CertificateRepository _certificateRepository;
+    private readonly TransactionRepository _transactionRepository;
+    private readonly CertificateManager _certificateManager;
+
+    public TransactionAppService(
+        CertificateRepository certificateRepository,
+        TransactionRepository transactionRepository,
+        CertificateManager certificateManager)
     {
-        private readonly ShieldDbContext _dbContext;
-        private readonly CertificateRepository _certificateRepository;
-        private readonly TransactionRepository _transactionRepository;
+        _certificateRepository = certificateRepository;
+        _transactionRepository = transactionRepository;
+        _certificateManager = certificateManager;
+    }
 
-        public TransactionAppService(
-            ShieldDbContext dbContext,
-            CertificateRepository certificateRepository,
-            TransactionRepository transactionRepository)
-        {
-            _dbContext = dbContext;
-            _certificateRepository = certificateRepository;
-            _transactionRepository = transactionRepository;
-        }
+    public async Task<Response<CreateTransactionOutput>> CreateAsync(CreateTransactionInput input, CancellationToken cancellationToken = default)
+    {
+        var certificate = await _certificateRepository.FindByDeviceActiveAsync(input.Identity.DeviceId, cancellationToken);
+        input.Data ??= new Dictionary<string, object>();
+        input.Data.Add("nonce", Guid.NewGuid().ToString());
+        var transaction = new Transaction(
+            certificate.Id,
+            input.InstanceId,
+            input.Identity.RequestId,
+            JsonSerializer.Serialize(input.Data)
+        );
 
-        public async Task<CreateTransactionOutput> CreateAsync(CreateTransactionInput input)
-        {
-            var certificate = await _certificateRepository.FindByDeviceActiveAsync(input.Identity.DeviceId);
-            CertificateCheck(certificate);
+        var encryptedData = _certificateManager.Encrypt(certificate.PublicCert, transaction.Data);
+        transaction.SignSignatured(encryptedData);
+        await _transactionRepository.InsertAsync(transaction, cancellationToken);
+        return Response<CreateTransactionOutput>.Success(
+            "success",
+            new CreateTransactionOutput(transaction.Id, encryptedData)
+        );
+    }
 
-            var transaction = new Transaction(
-                certificate.Id,
-                input.InstanceId,
-                input.Identity.RequestId,
-                JsonSerializer.Serialize(input.Data)
-                );
+    public async Task<Response<VerifyTransactionOutput>> VerifyAsync(Guid transactionId,
+        VerifyTransactionInput input, CancellationToken cancellationToken = default)
+    {
+        var transaction = await _transactionRepository.GetAsync(transactionId, cancellationToken);
 
-            await _transactionRepository.InsertAsync(transaction);
-            //TODO: Tayfun: encrpting data
-            return CreateTransactionOutput.Success(new CreateTransactionDto(transaction.Id, string.Empty));
-        }
+        transaction.Verified(
+            input.Identity.RequestId,
+            JsonSerializer.Serialize(input.RawData),
+            input.SignData);
 
-        public async Task<VerifyTransactionOutput> VerifyAsync(Guid transactionId, VerifyTransactionInput input)
-        {
-            var certificate = await _certificateRepository.FindByDeviceActiveAsync(input.Identity.DeviceId);
-            CertificateCheck(certificate);
-
-            var transaction = await _transactionRepository.GetAsync(transactionId);
-
-            //TODO: Tayfun: Signing process
-            transaction.Signed(input.Identity.RequestId, "", input.SignData);
-            return VerifyTransactionOutput.Success(new VerifyTransactionDto(true));
-        }
-
-        private void CertificateCheck(Certificate certificate)
-        {
-            if (certificate == null)
-            {
-                throw new NonActiveCertificateException();
-            }
-
-            if (certificate.IsExpiry)
-            {
-                throw new ExpiredCertificateException();
-            }
-        }
+        await _transactionRepository.UpdateAsync(transaction, cancellationToken);
+        return Response<VerifyTransactionOutput>.Success(
+            "",
+            new VerifyTransactionOutput(true)
+        );
     }
 }
