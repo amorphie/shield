@@ -1,9 +1,10 @@
-﻿using amorphie.shield.core.Model;
+﻿using amorphie.shield.Certificates;
+using amorphie.shield.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace amorphie.shield.data.Configurations;
+namespace amorphie.shield.Configurations;
 public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {
     public void Configure(EntityTypeBuilder<Transaction> builder)

@@ -2,10 +2,9 @@ using System.Text.Json.Serialization;
 using amorphie.core.Extension;
 using amorphie.core.Identity;
 using amorphie.core.Swagger;
-using amorphie.shield.data;
+using amorphie.shield;
 using amorphie.shield.Swagger;
 using amorphie.shield.Validator;
-using amorphie.shield.app;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using FluentValidation;
@@ -16,15 +15,11 @@ using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using amorphie.shield.ExceptionHandling;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
 // await builder.Configuration.AddVaultSecrets("amorphie-secretstore", new string[] { "amorphie-shield" });
 // var postgreSql = builder.Configuration["shielddb"];
 
 var postgreSql = "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
-
-
 
 builder.Services.AddApiVersioning(options =>
 {
@@ -43,7 +38,6 @@ builder.Services.AddApiVersioning(options =>
 }
 );
 builder.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>();
-
 
 // ---------------------------------------------
 
@@ -68,17 +62,13 @@ builder.Services.AddSwaggerGen(c =>
     // c.OperationFilter<ApiVersionOperationFilter>();
 });
 
-
-
-
 builder.Services.AddValidatorsFromAssemblyContaining<CertificateValidator>(includeInternalTypes: true);
 //builder.Services.AddAutoMapper(typeof(Program).Assembly);
-
-
 
 builder.Services.AddDbContext<ShieldDbContext>
     (options => options.UseNpgsql(postgreSql, b => b.MigrationsAssembly("amorphie.shield.data")));
 
+builder.Services.AddDataServices();
 builder.Services.AddManagerServices();
 builder.Services.AddExceptionHandler<ExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -131,4 +121,3 @@ app.AddRoutes();
 app.MapMetrics();
 
 app.Run();
-

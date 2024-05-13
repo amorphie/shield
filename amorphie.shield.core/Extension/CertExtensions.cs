@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Numerics;
 
-namespace amorphie.shield.core.Extension
+namespace amorphie.shield.Extension
 {
     public static class CertExtensions
     {

@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using amorphie.shield.core.Model;
+using amorphie.shield.Certificates;
+using amorphie.shield.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace amorphie.shield.data;
+namespace amorphie.shield;
 
 class ShieldDbContextFactory : IDesignTimeDbContextFactory<ShieldDbContext>
 {

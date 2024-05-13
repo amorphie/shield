@@ -1,5 +1,4 @@
-using amorphie.shield.core.Dto.Certificate;
-using amorphie.shield.core.Model;
+using amorphie.shield.Certificates;
 using AutoMapper;
 
 namespace amorphie.shield.Mapper;

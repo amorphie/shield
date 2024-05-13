@@ -1,7 +1,7 @@
 using System.Security.Cryptography.X509Certificates;
 using amorphie.core.Base;
 
-namespace amorphie.shield.core.Dto.Certificate;
+namespace amorphie.shield.Certificates;
 
 public class CertificateCreateDto : DtoBase
 {

@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace amorphie.shield.core.Model
+namespace amorphie.shield.Shared
 {
     public abstract class ValueObject
     {

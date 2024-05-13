@@ -1,4 +1,4 @@
-namespace amorphie.shield.core.Model
+namespace amorphie.shield.Certificates
 {
     public enum CertificateStatus
     {

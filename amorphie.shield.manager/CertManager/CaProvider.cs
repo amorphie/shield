@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 
-namespace amorphie.shield.app.CertManager;
+namespace amorphie.shield.CertManager;
 public class CaProvider
 {
     private CaProvider()

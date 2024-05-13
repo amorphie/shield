@@ -1,8 +1,8 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-using amorphie.shield.core.Extension;
+using amorphie.shield.Extension;
 
-namespace amorphie.shield.app.CertManager;
+namespace amorphie.shield.CertManager;
 public class CertificateManager
 {
     public X509Certificate2 Create(X509Certificate2 caCert, string identifier, string certName, string password)
@@ -17,7 +17,13 @@ public class CertificateManager
         using (var rsaProvider = RSA.Create(4096))
         {
             // Create a new certificate request for the client certificate
-            var request = new CertificateRequest(new X500DistinguishedName($"CN={certCN}, OU=Digital Banking, O=Burgan Bank Turkey, C=TR"), rsaProvider, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            var request = new CertificateRequest(
+                new X500DistinguishedName(
+                    $"CN={certCN}, OU=Digital Banking, O=Burgan Bank Turkey, C=TR"),
+                rsaProvider,
+                HashAlgorithmName.SHA256,
+                RSASignaturePadding.Pkcs1
+            );
 
             var keyUsage = new X509KeyUsageExtension(
                 X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment, true  // Add NonRepudiation if needed

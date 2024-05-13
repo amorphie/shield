@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using amorphie.core.Base;
+using amorphie.shield.Shared;
 
-namespace amorphie.shield.core.Model;
+namespace amorphie.shield.Certificates;
 
 /// <summary>
 /// Certificate

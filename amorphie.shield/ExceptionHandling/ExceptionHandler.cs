@@ -1,5 +1,4 @@
-using amorphie.shield.core;
-using amorphie.shield.core.Model;
+using amorphie.shield.Transactions;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace amorphie.shield.ExceptionHandling

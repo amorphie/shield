@@ -1,9 +1,9 @@
-﻿using amorphie.shield.core.Model;
+﻿using amorphie.shield.Certificates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace amorphie.shield.data.Configurations;
+namespace amorphie.shield.Configurations;
 public class CertificateConfiguration : IEntityTypeConfiguration<Certificate>
 {
     public void Configure(EntityTypeBuilder<Certificate> builder)

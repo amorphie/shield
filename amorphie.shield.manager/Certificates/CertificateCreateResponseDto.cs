@@ -1,6 +1,6 @@
 using amorphie.core.Base;
 
-namespace amorphie.shield.core.Dto.Certificate;
+namespace amorphie.shield.Certificates;
 
 public class CertificateCreateResponseDto : DtoBase
 {
