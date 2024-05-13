@@ -15,11 +15,11 @@ public class CertManagerTests
         var hpk = caCert.HasPrivateKey;
         var cn = "dev.ca.burganbank";
 
-        var caManager = new CaManager();
-        var resultCa = caManager.Create(cn, password);
-        
-        var certManager = new CertificateManager();
-        var result = certManager.Create(caCert, "", "testCert", password);
+        //var caManager = new CaManager();
+        //var resultCa = caManager.Create(cn, password);
+        ICaManager caManager = new FileCaManager();
+        var certManager = new CertificateManager(caManager);
+        var result = certManager.Create("", "testCert", password);
         // Assert
         Assert.NotNull(result);
         Assert.IsType<CertificateCreateDto>(result);
@@ -31,8 +31,9 @@ public class CertManagerTests
         var resultCa = CaProvider.CaCert;
 
 
-        var certManager = new CertificateManager();
-        var result = certManager.Create(resultCa, "", "testCert", password);
+        ICaManager caManager = new FileCaManager();
+        var certManager = new CertificateManager(caManager);
+        var result = certManager.Create("", "testCert", password);
         // Assert
         Assert.NotNull(result);
         Assert.IsType<CertificateCreateDto>(result);
@@ -42,9 +43,9 @@ public class CertManagerTests
     {
         var resultCa = CaProvider.CaCert;
 
-
-        var certManager = new CertificateManager();
-        var result = certManager.Create(resultCa, "", "testCert", password);
+        ICaManager caManager = new FileCaManager();
+        var certManager = new CertificateManager(caManager);
+        var result = certManager.Create("", "testCert", password);
 
         //var signature = resultCa.GetSignature();
         //var tbs = result.Cert.GetTbsCertificate();

@@ -2,6 +2,7 @@
 using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
 using amorphie.shield.Transactions;
+using amorphie.shield.Revokes;
 
 namespace amorphie.shield;
 public static class ServicesCollectionExtension
@@ -10,7 +11,8 @@ public static class ServicesCollectionExtension
     {
 
         services.AddScoped<ICertificateAppService, CertificateAppService>();
-        services.AddScoped<CaManager>();
+        services.AddScoped<IRevokeAppService, RevokeAppService>();
+        services.AddSingleton<ICaManager, FileCaManager>();
         services.AddScoped<CertificateManager>();
         services.AddScoped<ITransactionAppService, TransactionAppService>();
     }

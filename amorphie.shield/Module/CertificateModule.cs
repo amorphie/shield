@@ -18,7 +18,6 @@ public static class CertificateModule
     public static void MapCertificateModuleEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("certificate");
-        group.MapGet("/client-cert", GetClientCert);
         group.MapPost("/create", CreateAsync);
         group.MapGet("/status/serial/{certificateSerialNumber}", GetBySerialAsync);
         group.MapGet("/status/serial/{certificateSerialNumber}/user/{userTckn}", GetBySerialAndUserTcknAsync);
@@ -30,15 +29,6 @@ public static class CertificateModule
 
     }
 
-
-    static IResult GetClientCert([FromServices] CertificateManager certManager)
-    {
-        var ca = CaProvider.CaCert;
-        var certificate = certManager.Create(ca, "", "testClient", "password");
-        var cert = certificate.ExportCer();
-        var privateKey = certificate.GetRSAPrivateKey().ExportPrivateKey();
-        return Results.Ok((cert, privateKey));
-    }
     static async ValueTask<IResult> CreateAsync([FromBody] CertificateCreateInputDto certificateCreateRequest, [FromServices] ICertificateAppService certificateService)
     {
         var dbResponse = await certificateService.CreateAsync(certificateCreateRequest);

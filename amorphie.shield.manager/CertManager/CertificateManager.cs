@@ -5,11 +5,16 @@ using amorphie.shield.Extension;
 namespace amorphie.shield.CertManager;
 public class CertificateManager
 {
-    public X509Certificate2 Create(X509Certificate2 caCert, string identifier, string certName, string password)
+    private readonly ICaManager _caManager;
+    public CertificateManager(ICaManager caManager)
+    {
+        _caManager = caManager;
+    }
+    public X509Certificate2 Create(string identifier, string certName, string password)
     {
         // Create a new RSA provider for the client certificate
         // using (var rsaProvider = RSA.Create(4096))
-
+        X509Certificate2 caCert = _caManager.GetFromPfx();
         string certCN = $"{caCert.CN()}";
         if (!string.IsNullOrEmpty(identifier))
             certCN = $"{identifier}.{certCN}";

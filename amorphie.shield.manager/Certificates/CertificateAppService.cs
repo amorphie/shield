@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using amorphie.shield.CertManager;
 using amorphie.shield.Extension;
+using System.Security.Cryptography.X509Certificates;
 
 namespace amorphie.shield.Certificates;
 
@@ -23,29 +24,34 @@ public class CertificateAppService : ICertificateAppService
 
     public async Task<Response<CertificateCreateOutputDto>> CreateAsync(CertificateCreateInputDto input)
     {
-        var caCertificate = _certificateManager.Create(
-            CaProvider.CaCert,
+        var certificate = _certificateManager.Create(
             input.Identity.UserTCKN.ToString(),
             "testClient",
             "password");
 
         var certEntity = new Certificate(
-            cn: caCertificate.CN(),
+            cn: certificate.CN(),
             deviceId: input.Identity.DeviceId,
             tokenId: input.Identity.TokenId,
             requestId: input.Identity.RequestId,
             userTckn: input.Identity.UserTCKN.ToString(),
             instanceId: input.InstanceId,
-            serialNumber: caCertificate.SerialNumber().ToString(),
-            publicCert: caCertificate.ExportCer(),
-            thumbprint: caCertificate.Thumbprint,
-            expirationDate: caCertificate.NotAfter.ToUniversalTime()
+            serialNumber: certificate.SerialNumber().ToString(),
+            publicCert: certificate.ExportCer(),
+            thumbprint: certificate.Thumbprint,
+            expirationDate: certificate.NotAfter.ToUniversalTime()
         );
 
         certEntity.Active();
         await _certificateRepository.InsertAsync(certEntity);
 
-        return Response<CertificateCreateOutputDto>.Success("");
+        return Response<CertificateCreateOutputDto>.Success("", new CertificateCreateOutputDto
+        {
+            Id = certEntity.Id,
+            Certificate= certificate.ExportCer(),
+            PrivateKey=certificate.GetRSAPrivateKey()?.ExportPrivateKey(),
+            ExpirationDate = certificate.NotAfter.ToUniversalTime()
+        });
     }
 
     public async Task<Response<CertificateQueryOutputDto>> GetBySerialAsync(string serialNumber)
@@ -64,7 +70,7 @@ public class CertificateAppService : ICertificateAppService
         return Get(certEntity);
     }
 
-    public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXTokenIdAsync( string userTckn, Guid xTokenId)
+    public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXTokenIdAsync(string userTckn, Guid xTokenId)
     {
         var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.TokenId == xTokenId);
         return Get(certEntity);
