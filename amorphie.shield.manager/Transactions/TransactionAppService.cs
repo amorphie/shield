@@ -1,5 +1,6 @@
 using System.Text.Json;
 using amorphie.shield.Certificates;
+using amorphie.shield.data;
 
 namespace amorphie.shield.Transactions
 {

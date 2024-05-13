@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using amorphie.shield.ExceptionHandling;
+using amorphie.shield.data;
 
 var builder = WebApplication.CreateBuilder(args);
 // await builder.Configuration.AddVaultSecrets("amorphie-secretstore", new string[] { "amorphie-shield" });

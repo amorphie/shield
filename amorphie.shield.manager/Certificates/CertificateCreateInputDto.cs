@@ -3,7 +3,7 @@ using amorphie.shield.manager.Shared;
 
 namespace amorphie.shield.Certificates;
 
-public class CertificateCreateRequestDto : DtoBase
+public class CertificateCreateInputDto : DtoBase
 {
     public Guid? InstanceId { get; set; }
     public IdentityDto Identity { get; set; }

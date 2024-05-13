@@ -10,6 +10,6 @@ public class CertificateConfiguration : IEntityTypeConfiguration<Certificate>
     {
         builder.ToTable("Certificates");
         builder.HasKey(p => p.Id);
-        builder.Property(p => p.Status).HasConversion(new EnumToStringConverter<CertificateStatus>());
+        builder.Property(p => p.Status).HasConversion(new EnumToNumberConverter<CertificateStatus,int>());
     }
 }

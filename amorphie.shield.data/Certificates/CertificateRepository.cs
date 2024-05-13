@@ -1,3 +1,4 @@
+using amorphie.shield.data;
 using Microsoft.EntityFrameworkCore;
 
 namespace amorphie.shield.Certificates
@@ -17,7 +18,7 @@ namespace amorphie.shield.Certificates
         {
             return await _dbSet
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Identity.DeviceId == deviceId && p.Status == CertificateStatus.Active,
+            .FirstOrDefaultAsync(p => p.Identity.DeviceId == deviceId && p.Status == (int)CertificateStatus.Active,
             cancellationToken);
         }
 
