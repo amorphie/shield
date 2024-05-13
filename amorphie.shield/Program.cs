@@ -15,6 +15,7 @@ using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using amorphie.shield.ExceptionHandling;
 using amorphie.shield.data;
+using amorphie.shield.Module;
 
 var builder = WebApplication.CreateBuilder(args);
 // await builder.Configuration.AddVaultSecrets("amorphie-secretstore", new string[] { "amorphie-shield" });
@@ -114,6 +115,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.AddRoutes();
+app.MapCertificateModuleEndpoints();
+app.RegisterTransactionEndpoints();
 
 //app.MapHealthChecks("/healthz", new HealthCheckOptions
 //{
