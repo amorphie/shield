@@ -1,3 +1,4 @@
+using amorphie.shield.Module;
 using Asp.Versioning.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,5 +43,12 @@ public static class WebApplicationExtensions
                     */
             });
         }
+    }
+
+    public static void AddModuleEndpoints(this WebApplication app)
+    {
+        app.RegisterCertificateModuleEndpoints();
+        app.RegisterRevokeModuleEndpoints();
+        app.RegisterTransactionModuleEndpoints();
     }
 }

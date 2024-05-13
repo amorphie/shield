@@ -15,7 +15,7 @@ namespace amorphie.shield.Module;
 public static class CertificateModule
 {
 
-    public static void MapCertificateModuleEndpoints(this WebApplication app)
+    public static void RegisterCertificateModuleEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("certificate");
         group.MapPost("/create", CreateAsync);

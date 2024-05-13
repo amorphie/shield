@@ -6,7 +6,7 @@ namespace amorphie.shield.Module;
 public static class RevokeModule
 {
 
-    public static void MapRevokeModuleEndpoints(this WebApplication app)
+    public static void RegisterRevokeModuleEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("certificate/revoke");
 

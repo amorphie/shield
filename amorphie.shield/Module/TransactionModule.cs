@@ -5,7 +5,7 @@ namespace amorphie.shield.Module;
 
 public static class TransactionModule
 {
-    public static void RegisterTransactionEndpoints(this IEndpointRouteBuilder app)
+    public static void RegisterTransactionModuleEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("transactions");
         group.MapPost("/", async (
