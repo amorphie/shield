@@ -8,34 +8,30 @@ using amorphie.core.Extension;
 using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
 using amorphie.shield.Extension;
+using Microsoft.AspNetCore.Routing;
 
 namespace amorphie.shield.Module;
 
-public sealed class CertificateModule : BaseBBTRoute<CertificateDto, Certificate, ShieldDbContext>
+public static class CertificateModule
 {
-    public CertificateModule(WebApplication app) : base(app) { }
 
-    public override string[]? PropertyCheckList => new string[] { "FirstMidName", "LastName" };
-
-    public override string? UrlFragment => "cert";
-
-    public override void AddRoutes(RouteGroupBuilder routeGroupBuilder)
+    public static void MapCertificateModuleEndpoints(this WebApplication app)
     {
-        base.AddRoutes(routeGroupBuilder);
-        routeGroupBuilder.MapGet("/search", SearchMethod);
-        routeGroupBuilder.MapGet("/client-cert", GetClientCert);
-        routeGroupBuilder.MapPost("/save", SaveAsync);
-        routeGroupBuilder.MapPost("/status/serial/{certificateSerialNumber}", GetBySerialNumberAsync);
-        routeGroupBuilder.MapPost("/status/deviceId/{deviceId}", GetByDeviceIdAsync);
+        var group = app.MapGroup("certificate");
+        group.MapGet("/client-cert", GetClientCert);
+        group.MapPost("/create", CreateAsync);
+        group.MapGet("/status/serial/{certificateSerialNumber}", GetBySerialAsync);
+        group.MapGet("/status/serial/{certificateSerialNumber}/user/{userTckn}", GetBySerialAndUserTcknAsync);
+        group.MapGet("/status/serial/{certificateSerialNumber}/user/{userTckn}/token/{xTokenId}", GetBySerialAndUserTcknAndXTokenIdAsync);
+        group.MapGet("/status/user/{userTckn}/token/{xTokenId}", GetByUserTcknAndXTokenIdAsync);
+        group.MapGet("/status/user/{userTckn}/device/{xDeviceId}", GetByUserTcknAndXDeviceIdAsync);
+        group.MapGet("/status/user/device/{xDeviceId}", GetByDeviceIdAsync);
+        group.MapPost("/renew", CreateAsync);
+
     }
-    protected override ValueTask<IResult> UpsertMethod([FromServices] IMapper mapper, [FromServices] FluentValidation.IValidator<Certificate> validator, [FromServices] ShieldDbContext context, [FromServices] IBBTIdentity bbtIdentity, [FromBody] CertificateDto data, HttpContext httpContext, CancellationToken token)
-    {
-        return base.UpsertMethod(mapper, validator, context, bbtIdentity, data, httpContext, token);
-    }
-    async ValueTask<IResult> GetClientCert(
-        [FromServices] ShieldDbContext context,
-        [FromServices] CertificateManager certManager
-        )
+
+
+    static IResult GetClientCert([FromServices] CertificateManager certManager)
     {
         var ca = CaProvider.CaCert;
         var certificate = certManager.Create(ca, "", "testClient", "password");
@@ -43,58 +39,64 @@ public sealed class CertificateModule : BaseBBTRoute<CertificateDto, Certificate
         var privateKey = certificate.GetRSAPrivateKey().ExportPrivateKey();
         return Results.Ok((cert, privateKey));
     }
-    async ValueTask<IResult> SaveAsync(
-        [FromBody] CertificateCreateInputDto certificateCreateRequest,
-        [FromServices] ICertificateAppService certificateService
-        )
+    static async ValueTask<IResult> CreateAsync([FromBody] CertificateCreateInputDto certificateCreateRequest, [FromServices] ICertificateAppService certificateService)
     {
         var dbResponse = await certificateService.CreateAsync(certificateCreateRequest);
         return ApiResult.CreateResult(dbResponse);
     }
-    async ValueTask<IResult> GetBySerialNumberAsync(
-        [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
-        [FromServices] ICertificateAppService certificateService
-        )
-    {
-        var dbResponse = await certificateService.GetBySerialNumberAsync(certificateSerialNumber);
-        return ApiResult.CreateResult(dbResponse);
-    }
-        async ValueTask<IResult> GetByDeviceIdAsync(
-        [FromRoute(Name = "deviceId")] Guid deviceId,
-        [FromServices] ICertificateAppService certificateService
-        )
-    {
-        var dbResponse = await certificateService.GetByDeviceIdAsync(deviceId);
-        return ApiResult.CreateResult(dbResponse);
-    }
-
-    async ValueTask<IResult> SearchMethod(
-        [FromServices] ShieldDbContext context,
-        [FromServices] IMapper mapper,
-        [AsParameters] CertificateSearch userSearch,
-        HttpContext httpContext,
-        CancellationToken token
+    static async ValueTask<IResult> GetBySerialAsync(
+    [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
+    [FromServices] ICertificateAppService certificateService
     )
     {
-        IQueryable<Certificate> query = await context
-             .Set<Certificate>()
-             .AsNoTracking()
-             .Where(
-                 x =>
-                     x.PublicCert.Contains(userSearch.Keyword!)
-                     || x.SerialNumber.Contains(userSearch.Keyword!)
-             )
-             .Sort<Certificate>("PrivateKey", SortDirectionEnum.Asc);
+        var dbResponse = await certificateService.GetBySerialAsync(certificateSerialNumber);
+        return ApiResult.CreateResult(dbResponse);
+    }
+    static async ValueTask<IResult> GetBySerialAndUserTcknAsync(
+    [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
+    [FromRoute(Name = "userTckn")] string userTckn,
+    [FromServices] ICertificateAppService certificateService
+    )
+    {
+        var dbResponse = await certificateService.GetBySerialAndUserTcknAsync(certificateSerialNumber, userTckn);
+        return ApiResult.CreateResult(dbResponse);
+    }
+    static async ValueTask<IResult> GetBySerialAndUserTcknAndXTokenIdAsync(
+    [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
+    [FromRoute(Name = "userTckn")] string userTckn,
+    [FromRoute(Name = "xTokenId")] Guid xTokenId,
+    [FromServices] ICertificateAppService certificateService
+    )
+    {
+        var dbResponse = await certificateService.GetBySerialAndUserTcknAndXTokenIdAsync(certificateSerialNumber, userTckn, xTokenId);
+        return ApiResult.CreateResult(dbResponse);
+    }
+    static async ValueTask<IResult> GetByUserTcknAndXTokenIdAsync(
+    [FromRoute(Name = "userTckn")] string userTckn,
+    [FromRoute(Name = "xTokenId")] Guid xTokenId,
+    [FromServices] ICertificateAppService certificateService
+    )
+    {
+        var dbResponse = await certificateService.GetByUserTcknAndXTokenIdAsync(userTckn, xTokenId);
+        return ApiResult.CreateResult(dbResponse);
+    }
+    static async ValueTask<IResult> GetByUserTcknAndXDeviceIdAsync(
+    [FromRoute(Name = "userTckn")] string userTckn,
+    [FromRoute(Name = "xDeviceId")] Guid xDeviceId,
+    [FromServices] ICertificateAppService certificateService
+    )
+    {
+        var dbResponse = await certificateService.GetByUserTcknAndXDeviceIdAsync(userTckn, xDeviceId);
+        return ApiResult.CreateResult(dbResponse);
+    }
 
-
-        IList<Certificate> resultList = await query
-.Skip(userSearch.Page)
-.Take(userSearch.PageSize)
-.ToListAsync(token);
-
-        return (resultList != null && resultList.Count > 0)
-            ? Results.Ok(mapper.Map<IList<CertificateDto>>(resultList))
-            : Results.NoContent();
+    static async ValueTask<IResult> GetByDeviceIdAsync(
+    [FromRoute(Name = "xDeviceId")] Guid xDeviceId,
+    [FromServices] ICertificateAppService certificateService
+    )
+    {
+        var dbResponse = await certificateService.GetByDeviceIdAsync(xDeviceId);
+        return ApiResult.CreateResult(dbResponse);
     }
 
 }
