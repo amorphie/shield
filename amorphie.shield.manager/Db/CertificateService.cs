@@ -25,9 +25,17 @@ public class CertificateService
             .FirstOrDefaultAsync(w => w.XDeviceId == certificateCreateRequestDto.XDeviceId);
         if (certEntity == null)
         {
-            certEntity = CertificateMapper.Map(certificateCreateRequestDto, x509Cert);
-            _dbSet.Add(certEntity);
-            await _dbContext.SaveChangesAsync();
+
+            // var cert = new Certificate
+            // {
+            //     Id = data.Id,
+            //     PublicCert = data.PublicCert
+            // };
+
+            //certEntity = CertificateMapper.Map(certificateCreateRequestDto, x509Cert);
+            //_dbSet.Add(certEntity);
+            //await _dbContext.SaveChangesAsync();
+
         }
         else if (certEntity.Status == CertificateStatus.Active)
         {

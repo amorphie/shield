@@ -1,27 +1,101 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using amorphie.core.Base;
 
 namespace amorphie.shield.core.Model;
 
-public class Certificate : EntityBase
+/// <summary>
+/// Certificate
+/// </summary>
+public sealed class Certificate : EntityBase
 {
     /// <summary>
-    /// Workflow instanceid
+    /// Workflow Instance Id
     /// </summary>
-    public Guid? InstanceId { get; set; }
-    public Guid? XDeviceId { get; set; } //XDevice id ile bir tane aktif cert olacak
-    public Guid? XTokenId { get; set; }
-    public Guid? XRequestId { get; set; }
-    public string? UserTCKN { get; set; }
-    public string? Cn { get; set; }
-    public string SerialNumber { get; set; } = default!;
-    public string PublicCert { get; set; } = default!;
-    public string? ThumbPrint { get; set; }
+    public Guid? InstanceId { get; private set; }
+    public Identity Identity { get; private set; }
     /// <summary>
-    /// Active, Passive, Revoked, Expired
+    /// Certificate CN
     /// </summary>
-    public string Status { get; set; } = default!;
-    public string? StatusReason { get; set; }
-    public DateTime? RevocationDate { get; set; }
-    public DateTime ExpirationDate { get; set; }
+    public string Cn { get; private set; }
+    /// <summary>
+    /// Serial Number
+    /// </summary>
+    public string SerialNumber { get; private set; } = default!;
+    /// <summary>
+    /// Public Cert
+    /// </summary>
+    public string PublicCert { get; private set; } = default!;
+    /// <summary>
+    /// Thumb Print
+    /// </summary>
+    public string? ThumbPrint { get; private set; }
+    /// <summary>
+    /// Active, Passive, Revoked
+    /// </summary>
+    public CertificateStatus Status { get; private set; } = default!;
+    /// <summary>
+    /// Status Reason
+    /// </summary>
+    public string? StatusReason { get; private set; }
+    /// <summary>
+    /// Revocation Date
+    /// </summary>
+    public DateTime? RevocationDate { get; private set; }
+    /// <summary>
+    /// Expiration Date
+    /// </summary>
+    public DateTime ExpirationDate { get; private set; }
 
+    [NotMapped]
+    public bool IsExpiry => DateTime.UtcNow > ExpirationDate;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    private Certificate()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    {
+        //For ORM
+    }
+
+    public Certificate(
+        string cn,
+        Guid deviceId,
+        Guid tokenId,
+        Guid requestId,
+        string userTckn,
+        Guid? instanceId,
+        string serialNumber,
+        string publicCert,
+        string? thumbprint,
+        DateTime expirationDate
+    )
+    {
+        Cn = cn;
+        Identity = new Identity(
+            deviceId, 
+            tokenId, 
+            requestId, 
+            userTckn);
+        InstanceId = instanceId;
+        SerialNumber = serialNumber;
+        PublicCert = publicCert;
+        ThumbPrint = thumbprint;
+        ExpirationDate = expirationDate;
+    }
+
+    public void Active(){
+        Status = CertificateStatus.Active;
+        StatusReason = "Actived";
+    }
+
+    public void Passive(string? reason){
+        Status = CertificateStatus.Passive;
+        StatusReason = reason;
+    }
+
+    public void Revoked(string? reason){
+        Status = CertificateStatus.Revoked;
+        RevocationDate = DateTime.UtcNow;
+        StatusReason = reason;
+    }
+    
 }

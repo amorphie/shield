@@ -41,4 +41,19 @@ public class ShieldDbContext : DbContext
 
     public DbSet<Certificate> Certificates { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<TransactionActivity> TransactionActivities { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        //https://learn.microsoft.com/en-us/ef/core/modeling/owned-entities This configuration does not work in the IEntityTypeConfiguration section.
+        modelBuilder.Entity<Certificate>().OwnsOne(p => p.Identity, i =>
+        {
+            i.WithOwner();
+            i.Property(ip => ip.DeviceId).HasColumnName("DeviceId");
+            i.Property(ip => ip.RequestId).HasColumnName("RequestId");
+            i.Property(ip => ip.TokenId).HasColumnName("TokenId");
+            i.Property(ip => ip.UserTCKN).HasColumnName("UserTCKN").HasMaxLength(11);
+        });
+
+    }
 }

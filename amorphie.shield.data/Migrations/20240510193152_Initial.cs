@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace amorphie.shield.data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,15 +17,15 @@ namespace amorphie.shield.data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     InstanceId = table.Column<Guid>(type: "uuid", nullable: true),
-                    XDeviceId = table.Column<Guid>(type: "uuid", nullable: true),
-                    XTokenId = table.Column<Guid>(type: "uuid", nullable: true),
-                    XRequestId = table.Column<Guid>(type: "uuid", nullable: true),
-                    UserTCKN = table.Column<string>(type: "text", nullable: true),
-                    Cn = table.Column<string>(type: "text", nullable: true),
+                    DeviceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TokenId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserTCKN = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
+                    Cn = table.Column<string>(type: "text", nullable: false),
                     SerialNumber = table.Column<string>(type: "text", nullable: false),
                     PublicCert = table.Column<string>(type: "text", nullable: false),
                     ThumbPrint = table.Column<string>(type: "text", nullable: true),
-                    Status = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     StatusReason = table.Column<string>(type: "text", nullable: true),
                     RevocationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ExpirationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -47,12 +47,12 @@ namespace amorphie.shield.data.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     InstanceId = table.Column<Guid>(type: "uuid", nullable: true),
-                    XRequestId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Data = table.Column<string>(type: "text", nullable: false),
                     SignSignature = table.Column<string>(type: "text", nullable: true),
                     CertificateId = table.Column<Guid>(type: "uuid", nullable: false),
                     SignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Status = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedByBehalfOf = table.Column<Guid>(type: "uuid", nullable: true),
@@ -63,23 +63,17 @@ namespace amorphie.shield.data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Certificates_CertificateId",
-                        column: x => x.CertificateId,
-                        principalTable: "Certificates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TransactionActivity",
+                name: "TransactionActivities",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TransactionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    XRequestId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Data = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedByBehalfOf = table.Column<Guid>(type: "uuid", nullable: true),
@@ -89,9 +83,9 @@ namespace amorphie.shield.data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionActivity", x => x.Id);
+                    table.PrimaryKey("PK_TransactionActivities", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TransactionActivity_Transactions_TransactionId",
+                        name: "FK_TransactionActivities_Transactions_TransactionId",
                         column: x => x.TransactionId,
                         principalTable: "Transactions",
                         principalColumn: "Id",
@@ -99,27 +93,22 @@ namespace amorphie.shield.data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionActivity_TransactionId",
-                table: "TransactionActivity",
+                name: "IX_TransactionActivities_TransactionId",
+                table: "TransactionActivities",
                 column: "TransactionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_CertificateId",
-                table: "Transactions",
-                column: "CertificateId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "TransactionActivity");
+                name: "Certificates");
+
+            migrationBuilder.DropTable(
+                name: "TransactionActivities");
 
             migrationBuilder.DropTable(
                 name: "Transactions");
-
-            migrationBuilder.DropTable(
-                name: "Certificates");
         }
     }
 }
