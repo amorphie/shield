@@ -38,7 +38,7 @@ public class TransactionAppService : ITransactionAppService
         await _transactionRepository.InsertAsync(transaction, cancellationToken);
         return Response<CreateTransactionOutput>.Success(
             "success",
-            new CreateTransactionOutput(transaction.Id, encryptedData)
+            new CreateTransactionOutput(transaction.Id, input.Data, encryptedData)
         );
     }
 
@@ -54,7 +54,7 @@ public class TransactionAppService : ITransactionAppService
 
         await _transactionRepository.UpdateAsync(transaction, cancellationToken);
         return Response<VerifyTransactionOutput>.Success(
-            "",
+            "success",
             new VerifyTransactionOutput(true)
         );
     }
