@@ -27,7 +27,7 @@ namespace amorphie.shield
                 {
                     return Results.StatusCode(StatusCodes.Status304NotModified);
                 }
-                return Results.Ok(response.Data);
+                return Results.Ok(response);
             }
             else
             {

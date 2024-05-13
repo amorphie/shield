@@ -13,8 +13,7 @@ namespace amorphie.shield.Module;
 
 public sealed class CertificateModule : BaseBBTRoute<CertificateDto, Certificate, ShieldDbContext>
 {
-    public CertificateModule(WebApplication app)
-        : base(app) { }
+    public CertificateModule(WebApplication app) : base(app) { }
 
     public override string[]? PropertyCheckList => new string[] { "FirstMidName", "LastName" };
 
@@ -22,18 +21,18 @@ public sealed class CertificateModule : BaseBBTRoute<CertificateDto, Certificate
 
     public override void AddRoutes(RouteGroupBuilder routeGroupBuilder)
     {
-
         base.AddRoutes(routeGroupBuilder);
-
         routeGroupBuilder.MapGet("/search", SearchMethod);
         routeGroupBuilder.MapGet("/client-cert", GetClientCert);
         routeGroupBuilder.MapPost("/save", SaveAsync);
+        routeGroupBuilder.MapPost("/status/serial/{certificateSerialNumber}", GetBySerialNumberAsync);
+        routeGroupBuilder.MapPost("/status/deviceId/{deviceId}", GetByDeviceIdAsync);
     }
     protected override ValueTask<IResult> UpsertMethod([FromServices] IMapper mapper, [FromServices] FluentValidation.IValidator<Certificate> validator, [FromServices] ShieldDbContext context, [FromServices] IBBTIdentity bbtIdentity, [FromBody] CertificateDto data, HttpContext httpContext, CancellationToken token)
     {
         return base.UpsertMethod(mapper, validator, context, bbtIdentity, data, httpContext, token);
     }
-    protected async ValueTask<IResult> GetClientCert(
+    async ValueTask<IResult> GetClientCert(
         [FromServices] ShieldDbContext context,
         [FromServices] CertificateManager certManager
         )
@@ -44,16 +43,32 @@ public sealed class CertificateModule : BaseBBTRoute<CertificateDto, Certificate
         var privateKey = certificate.GetRSAPrivateKey().ExportPrivateKey();
         return Results.Ok((cert, privateKey));
     }
-    protected async ValueTask<IResult> SaveAsync(
-        [FromBody] CertificateCreateRequestDto certificateCreateRequest,
+    async ValueTask<IResult> SaveAsync(
+        [FromBody] CertificateCreateInputDto certificateCreateRequest,
         [FromServices] ICertificateAppService certificateService
         )
     {
         var dbResponse = await certificateService.CreateAsync(certificateCreateRequest);
         return ApiResult.CreateResult(dbResponse);
     }
+    async ValueTask<IResult> GetBySerialNumberAsync(
+        [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
+        [FromServices] ICertificateAppService certificateService
+        )
+    {
+        var dbResponse = await certificateService.GetBySerialNumberAsync(certificateSerialNumber);
+        return ApiResult.CreateResult(dbResponse);
+    }
+        async ValueTask<IResult> GetByDeviceIdAsync(
+        [FromRoute(Name = "deviceId")] Guid deviceId,
+        [FromServices] ICertificateAppService certificateService
+        )
+    {
+        var dbResponse = await certificateService.GetByDeviceIdAsync(deviceId);
+        return ApiResult.CreateResult(dbResponse);
+    }
 
-    protected async ValueTask<IResult> SearchMethod(
+    async ValueTask<IResult> SearchMethod(
         [FromServices] ShieldDbContext context,
         [FromServices] IMapper mapper,
         [AsParameters] CertificateSearch userSearch,

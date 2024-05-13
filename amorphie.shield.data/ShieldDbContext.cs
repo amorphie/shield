@@ -41,6 +41,7 @@ public class ShieldDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ShieldDbContext).Assembly);
         //https://learn.microsoft.com/en-us/ef/core/modeling/owned-entities This configuration does not work in the IEntityTypeConfiguration section.
         modelBuilder.Entity<Certificate>().OwnsOne(p => p.Identity, i =>
         {
@@ -50,6 +51,7 @@ public class ShieldDbContext : DbContext
             i.Property(ip => ip.TokenId).HasColumnName("TokenId");
             i.Property(ip => ip.UserTCKN).HasColumnName("UserTCKN").HasMaxLength(11);
         });
+        //modelBuilder.HasPostgresEnum<CertificateStatus>();
 
     }
 }

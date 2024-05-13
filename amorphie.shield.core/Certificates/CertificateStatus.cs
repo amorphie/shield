@@ -1,8 +1,9 @@
-namespace amorphie.shield.Certificates;
-
-public enum CertificateStatus
+namespace amorphie.shield.Certificates
 {
-    Active,
-    Passive,
-    Revoked
+    public enum CertificateStatus
+    {
+        Active = 0,
+        Passive = 1,
+        Revoked = 2
+    }
 }
