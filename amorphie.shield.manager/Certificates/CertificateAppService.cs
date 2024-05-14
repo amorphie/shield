@@ -25,7 +25,7 @@ public class CertificateAppService : ICertificateAppService
     public async Task<Response<CertificateCreateOutputDto>> CreateAsync(CertificateCreateInputDto input)
     {
         var certificate = _certificateManager.Create(
-            input.Identity.UserTCKN.ToString(),
+            input.Identity.UserTCKN,
             "testClient",
             "password");
 
@@ -34,7 +34,7 @@ public class CertificateAppService : ICertificateAppService
             deviceId: input.Identity.DeviceId,
             tokenId: input.Identity.TokenId,
             requestId: input.Identity.RequestId,
-            userTckn: input.Identity.UserTCKN.ToString(),
+            userTckn: input.Identity.UserTCKN,
             instanceId: input.InstanceId,
             serialNumber: certificate.SerialNumber().ToString(),
             publicCert: certificate.ExportCer(),

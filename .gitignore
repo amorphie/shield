@@ -361,3 +361,4 @@ tests/collections/reports
 *.key
 *.pfx
 *.pem
+*.DS_Store
