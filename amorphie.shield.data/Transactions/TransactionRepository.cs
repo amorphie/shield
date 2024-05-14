@@ -34,6 +34,7 @@ public class TransactionRepository
     public async Task<Transaction> UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default)
     {
         _dbSet.Update(transaction);
+        _dbContext.Set<TransactionActivity>().AddRange(transaction.Activities);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return transaction;
     }

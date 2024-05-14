@@ -132,6 +132,11 @@ public sealed class Transaction : EntityBase
         string payloadData
     )
     {
+        if (Activities == null)
+        {
+            Activities = new Collection<TransactionActivity>();
+
+        }
         Activities!.Add(
             new TransactionActivity(
                 Id,

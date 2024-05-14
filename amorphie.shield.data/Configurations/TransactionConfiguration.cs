@@ -12,7 +12,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.ToTable("Transactions");
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.Status).HasConversion(new EnumToStringConverter<TransactionStatus>());
+        builder.Property(p => p.Status).HasConversion(new EnumToNumberConverter<TransactionStatus, int>());
         builder.HasOne<Certificate>().WithMany().HasForeignKey(p => p.CertificateId).OnDelete(DeleteBehavior.Cascade);
     }
 }
@@ -24,7 +24,7 @@ public class TransactionActivityConfiguration : IEntityTypeConfiguration<Transac
         builder.ToTable("TransactionActivities");
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.Status).HasConversion(new EnumToStringConverter<TransactionStatus>());
+        builder.Property(p => p.Status).HasConversion(new EnumToNumberConverter<TransactionStatus, int>());
         builder.HasOne<Transaction>().WithMany(p => p.Activities).HasForeignKey(p => p.TransactionId).OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -51,32 +51,33 @@ public class CertificateManager
 
     public string Encrypt(string publicPhase, string payloadData)
     {
-        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(4096))
         {
             byte[] dataToEncrypt = System.Text.Encoding.UTF8.GetBytes(payloadData);
-            rsa.ImportParameters(ConvertPublicKeyStringToRSAParameters(publicPhase));
+            rsa.ImportParameters(GetRSAParametersFromKey(publicPhase));
             return  Convert.ToBase64String(rsa.Encrypt(dataToEncrypt, false));
         }
     }
-
-    private RSAParameters ConvertPublicKeyStringToRSAParameters(string publicKeyString)
+    private static RSAParameters GetRSAParametersFromKey(string publicKeyValue)
     {
-        byte[] publicKeyBytes = Convert.FromBase64String(publicKeyString);
-        RSAParameters publicKey = new RSAParameters();
-        using (var stream = new System.IO.MemoryStream(publicKeyBytes))
+        byte[] modulusBytes = System.Text.Encoding.UTF8.GetBytes(publicKeyValue);
+        Array.Resize(ref modulusBytes, 256);
+        byte[] exponentBytes = { 1, 0, 1 };
+
+        RSAParameters rsaParameters = new RSAParameters
         {
-            var reader = new System.IO.BinaryReader(stream);
-            publicKey.Modulus = reader.ReadBytes(reader.ReadInt32());
-            publicKey.Exponent = reader.ReadBytes(reader.ReadInt32());
-        }
-        return publicKey;
+            Modulus = modulusBytes,
+            Exponent = exponentBytes
+        };
+
+        return rsaParameters;
     }
 
     // Generate a new serial number for a certificate
     byte[] GenerateSerialNumber()
     {
         // Create a new RNGCryptoServiceProvider to generate random bytes
-        using (var rng = new RNGCryptoServiceProvider())
+        using (var rng = RandomNumberGenerator.Create())
         {
             // Create a byte array with the size of a certificate serial number (20 bytes)
             var serialNumber = new byte[20];
