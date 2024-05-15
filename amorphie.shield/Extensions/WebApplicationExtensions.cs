@@ -12,7 +12,10 @@ public static class WebApplicationExtensions
         var db = scope.ServiceProvider.GetRequiredService<ShieldDbContext>();
 
         db.Database.Migrate();
-        DbInitializer.Initialize(db);
+
+        if(app.Environment.IsDevelopment()){
+            DbInitializer.Initialize(db);
+        }        
     }
     
     public static void UseSwaggerMiddleware(this WebApplication app)

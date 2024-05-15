@@ -6,7 +6,7 @@ namespace amorphie.shield.Transactions;
 /// Transaction Activity
 /// It keeps a log of every status change that occurs for the transaction.
 /// </summary>
-public sealed class TransactionActivity : EntityBase
+public sealed class TransactionActivity
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private TransactionActivity()
@@ -27,11 +27,13 @@ public sealed class TransactionActivity : EntityBase
         Data = payloadData;
         Status = status;
     }
-    
+
+    public DateTime CreatedAt { get; set; } = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc);
+
     /// <summary>
     /// <see cref="Transaction"/> Id
     /// </summary>
-    public Guid TransactionId { get; private set; }  
+    public Guid TransactionId { get; private set; }
     /// <summary>
     /// Request Id
     /// </summary>

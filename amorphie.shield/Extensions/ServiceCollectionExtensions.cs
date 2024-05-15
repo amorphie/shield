@@ -30,7 +30,12 @@ public static class ServiceCollectionExtensions
             "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
 
         services.AddDbContext<ShieldDbContext>
-            (options => options.UseNpgsql(postgreSql, b => b.MigrationsAssembly("amorphie.shield.data")));
+            (options => {
+                options.UseNpgsql(postgreSql, b => {
+                    b.MigrationsAssembly("amorphie.shield.data");
+                    b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    });
+                });
         return services;
     }
 

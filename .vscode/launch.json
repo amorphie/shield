@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "dapr-debug-amorphie-shield",
-            "program": "${workspaceFolder}/amorphie.shield/bin/Debug/net7.0/amorphie.shield.dll",
+            "program": "${workspaceFolder}/amorphie.shield/bin/Debug/net8.0/amorphie.shield.dll",
             "args": [],
             "cwd": "${workspaceFolder}/amorphie.shield",
             "stopAtEntry": false,

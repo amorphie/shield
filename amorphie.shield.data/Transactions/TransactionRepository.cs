@@ -15,7 +15,7 @@ public class TransactionRepository
 
     public async Task<Transaction> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var transaction = await _dbSet.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        var transaction = await _dbContext.Transactions.Include(i => i.Activities).FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         if (transaction != null)
         {
             return transaction;
@@ -30,11 +30,15 @@ public class TransactionRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
         return transaction;
     }
-    
+
     public async Task<Transaction> UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default)
     {
-        _dbSet.Update(transaction);
-        _dbContext.Set<TransactionActivity>().AddRange(transaction.Activities);
+        if (_dbContext.Set<Transaction>().Local.All(e => e != transaction))
+        {
+            _dbContext.Set<Transaction>().Attach(transaction);
+            _dbContext.Update(transaction);
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
         return transaction;
     }

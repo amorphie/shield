@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using amorphie.shield.data;
+using amorphie.shield;
 
 #nullable disable
 
-namespace amorphie.shield.data.Migrations
+namespace amorphie.shield.Migrations
 {
     [DbContext(typeof(ShieldDbContext))]
     partial class ShieldDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace amorphie.shield.data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Certificate", b =>
+            modelBuilder.Entity("amorphie.shield.Certificates.Certificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -78,10 +78,10 @@ namespace amorphie.shield.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Certificates");
+                    b.ToTable("Certificates", (string)null);
                 });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Transaction", b =>
+            modelBuilder.Entity("amorphie.shield.Transactions.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -129,56 +129,14 @@ namespace amorphie.shield.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Transactions");
+                    b.HasIndex("CertificateId");
+
+                    b.ToTable("Transactions", (string)null);
                 });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.TransactionActivity", b =>
+            modelBuilder.Entity("amorphie.shield.Certificates.Certificate", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CreatedByBehalfOf")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ModifiedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ModifiedByBehalfOf")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TransactionId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("TransactionActivities");
-                });
-
-            modelBuilder.Entity("amorphie.shield.core.Model.Certificate", b =>
-                {
-                    b.OwnsOne("amorphie.shield.core.Model.Identity", "Identity", b1 =>
+                    b.OwnsOne("amorphie.shield.Shared.Identity", "Identity", b1 =>
                         {
                             b1.Property<Guid>("CertificateId")
                                 .HasColumnType("uuid");
@@ -213,17 +171,46 @@ namespace amorphie.shield.data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.TransactionActivity", b =>
+            modelBuilder.Entity("amorphie.shield.Transactions.Transaction", b =>
                 {
-                    b.HasOne("amorphie.shield.core.Model.Transaction", null)
-                        .WithMany("Activities")
-                        .HasForeignKey("TransactionId")
+                    b.HasOne("amorphie.shield.Certificates.Certificate", null)
+                        .WithMany()
+                        .HasForeignKey("CertificateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("amorphie.shield.core.Model.Transaction", b =>
-                {
+                    b.OwnsMany("amorphie.shield.Transactions.TransactionActivity", "Activities", b1 =>
+                        {
+                            b1.Property<Guid>("TransactionId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("Data")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<Guid>("RequestId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Status")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("TransactionId", "Id");
+
+                            b1.ToTable("TransactionActivities", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("TransactionId");
+                        });
+
                     b.Navigation("Activities");
                 });
 #pragma warning restore 612, 618

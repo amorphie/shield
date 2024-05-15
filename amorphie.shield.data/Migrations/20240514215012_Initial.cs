@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace amorphie.shield.data.Migrations
+namespace amorphie.shield.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -46,11 +47,11 @@ namespace amorphie.shield.data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CertificateId = table.Column<Guid>(type: "uuid", nullable: false),
                     InstanceId = table.Column<Guid>(type: "uuid", nullable: true),
                     RequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Data = table.Column<string>(type: "text", nullable: false),
                     SignSignature = table.Column<string>(type: "text", nullable: true),
-                    CertificateId = table.Column<Guid>(type: "uuid", nullable: false),
                     SignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -63,27 +64,29 @@ namespace amorphie.shield.data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Transactions_Certificates_CertificateId",
+                        column: x => x.CertificateId,
+                        principalTable: "Certificates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "TransactionActivities",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TransactionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     RequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Data = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedByBehalfOf = table.Column<Guid>(type: "uuid", nullable: true),
-                    ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    ModifiedByBehalfOf = table.Column<Guid>(type: "uuid", nullable: true)
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionActivities", x => x.Id);
+                    table.PrimaryKey("PK_TransactionActivities", x => new { x.TransactionId, x.Id });
                     table.ForeignKey(
                         name: "FK_TransactionActivities_Transactions_TransactionId",
                         column: x => x.TransactionId,
@@ -93,22 +96,22 @@ namespace amorphie.shield.data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionActivities_TransactionId",
-                table: "TransactionActivities",
-                column: "TransactionId");
+                name: "IX_Transactions_CertificateId",
+                table: "Transactions",
+                column: "CertificateId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Certificates");
-
-            migrationBuilder.DropTable(
                 name: "TransactionActivities");
 
             migrationBuilder.DropTable(
                 name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "Certificates");
         }
     }
 }
