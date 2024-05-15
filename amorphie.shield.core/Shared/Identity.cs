@@ -10,7 +10,7 @@ public class Identity : ValueObject
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     internal Identity(
-        Guid deviceId,
+        string deviceId,
         Guid tokenId,
         Guid requestId,
         string userTckn
@@ -25,7 +25,7 @@ public class Identity : ValueObject
     /// <summary>
     /// Request Id
     /// </summary>
-    public Guid DeviceId { get; private set; }
+    public string DeviceId { get; private set; }
 
     /// <summary>
     /// Token Id

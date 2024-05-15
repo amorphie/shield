@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using amorphie.shield;
@@ -11,9 +12,11 @@ using amorphie.shield;
 namespace amorphie.shield.Migrations
 {
     [DbContext(typeof(ShieldDbContext))]
-    partial class ShieldDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240515131556_Alter_DeviceId_Type_Changed")]
+    partial class Alter_DeviceId_Type_Changed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

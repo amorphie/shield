@@ -25,7 +25,7 @@ public static class RevokeModule
         return ApiResult.CreateResult(dbResponse);
     }
     static async ValueTask<IResult> RevokeDeviceAsync(
-    [FromRoute(Name = "xDeviceId")] Guid xDeviceId,
+    [FromRoute(Name = "xDeviceId")] string xDeviceId,
     [FromServices] IRevokeAppService revokeService
     )
     {

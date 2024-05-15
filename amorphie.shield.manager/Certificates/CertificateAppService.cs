@@ -76,13 +76,13 @@ public class CertificateAppService : ICertificateAppService
         return Get(certEntity);
     }
 
-    public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, Guid xDeviceId)
+    public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, string xDeviceId)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.TokenId == xDeviceId);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.DeviceId == xDeviceId);
         return Get(certEntity);
     }
 
-    public async Task<Response<CertificateQueryOutputDto>> GetByDeviceIdAsync(Guid xDeviceId)
+    public async Task<Response<CertificateQueryOutputDto>> GetByDeviceIdAsync(string xDeviceId)
     {
         var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.DeviceId == xDeviceId);
         return Get(certEntity);

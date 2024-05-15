@@ -23,7 +23,7 @@ public class TransactionAppService : ITransactionAppService
 
     public async Task<Response<CreateTransactionOutput>> CreateAsync(CreateTransactionInput input, CancellationToken cancellationToken = default)
     {
-        var certificate = await _certificateRepository.FindByDeviceActiveAsync(input.Identity.DeviceId, cancellationToken);
+        var certificate = await _certificateRepository.FindByDeviceAndUserActiveAsync(input.Identity.DeviceId, input.Identity.UserTCKN, cancellationToken);
         input.Data ??= new Dictionary<string, object>();
         input.Data.Add("nonce", Guid.NewGuid().ToString());
         var transaction = new Transaction(

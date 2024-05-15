@@ -21,7 +21,7 @@ public class RevokeAppService : IRevokeAppService
         return Response<RevokeTokenOutput>.Success("success", new RevokeTokenOutput(true, certificate.RevocationDate!.Value));
     }
 
-    public async Task<Response<RevokeDeviceOutput>> RevokeDeviceAsync(Guid deviceId, CancellationToken cancellationToken = default)
+    public async Task<Response<RevokeDeviceOutput>> RevokeDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
     {
         var certificate = await _certificateRepository.GetByDeviceAsync(deviceId, cancellationToken);
         certificate.Revoked("device request");

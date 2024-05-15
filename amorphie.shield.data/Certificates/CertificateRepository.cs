@@ -13,11 +13,11 @@ public class CertificateRepository
         _dbSet = _dbContext.Set<Certificate>();
     }
 
-    public async Task<Certificate> FindByDeviceActiveAsync(Guid deviceId, CancellationToken cancellationToken = default)
+    public async Task<Certificate> FindByDeviceAndUserActiveAsync(string deviceId, string? userTckn, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AsNoTracking()
-            .FirstAsync(p => p.Identity.DeviceId == deviceId && p.Status == CertificateStatus.Active,
+            .FirstAsync(p => p.Identity.DeviceId == deviceId && p.Identity.UserTCKN == userTckn && p.Status == CertificateStatus.Active,
                 cancellationToken);
     }
     
@@ -51,7 +51,7 @@ public class CertificateRepository
         throw new EntityNotFoundException(typeof(Certificate), tokenId, "Token certificate not found");
     }
     
-    public async Task<Certificate> GetByDeviceAsync(Guid deviceId, CancellationToken cancellationToken = default)
+    public async Task<Certificate> GetByDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
     {
         var certificate =  await _dbSet
             .AsNoTracking()

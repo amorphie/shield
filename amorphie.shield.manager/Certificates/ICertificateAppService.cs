@@ -9,6 +9,6 @@ public interface ICertificateAppService
     Task<Response<CertificateQueryOutputDto>> GetBySerialAndUserTcknAsync(string serialNumber, string userTckn);
     Task<Response<CertificateQueryOutputDto>> GetBySerialAndUserTcknAndXTokenIdAsync(string serialNumber, string userTckn, Guid xTokenId);
     Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXTokenIdAsync(string userTckn, Guid xTokenId);
-    Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, Guid xDeviceId);
-    Task<Response<CertificateQueryOutputDto>> GetByDeviceIdAsync(Guid xDeviceId);
+    Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, string xDeviceId);
+    Task<Response<CertificateQueryOutputDto>> GetByDeviceIdAsync(string xDeviceId);
 }

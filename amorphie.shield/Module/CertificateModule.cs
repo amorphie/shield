@@ -72,7 +72,7 @@ public static class CertificateModule
     }
     static async ValueTask<IResult> GetByUserTcknAndXDeviceIdAsync(
     [FromRoute(Name = "userTckn")] string userTckn,
-    [FromRoute(Name = "xDeviceId")] Guid xDeviceId,
+    [FromRoute(Name = "xDeviceId")] string xDeviceId,
     [FromServices] ICertificateAppService certificateService
     )
     {
@@ -81,7 +81,7 @@ public static class CertificateModule
     }
 
     static async ValueTask<IResult> GetByDeviceIdAsync(
-    [FromRoute(Name = "xDeviceId")] Guid xDeviceId,
+    [FromRoute(Name = "xDeviceId")] string xDeviceId,
     [FromServices] ICertificateAppService certificateService
     )
     {

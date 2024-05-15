@@ -59,7 +59,7 @@ public sealed class Certificate : EntityBase
 
     public Certificate(
         string cn,
-        Guid deviceId,
+        string deviceId,
         Guid tokenId,
         Guid requestId,
         string userTckn,

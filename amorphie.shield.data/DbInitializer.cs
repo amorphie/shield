@@ -18,7 +18,7 @@ public static class DbInitializer
         // {
         var certificate = new Certificate(
             $"34987491780.dev.ca.burganbank",
-            Guid.Parse("27abe79b-b2fa-4d3e-b656-61ce2fdb2a07"),
+            "27abe79b-b2fa-4d3e-b656-61ce2fdb2a07",
             Guid.Parse("18ab1b9f-6dbb-45de-a197-7b6f5a152503"),
             Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
             "34987491780",
