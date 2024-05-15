@@ -85,7 +85,15 @@ public class CertificateAppService : ICertificateAppService
     public async Task<Response<CertificateQueryOutputDto>> GetByDeviceIdAsync(Guid xDeviceId)
     {
         var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.DeviceId == xDeviceId);
-        return Get(certEntity);
+        var result = Get(certEntity);
+        result.Data.Identity = new Shared.IdentityDto
+        {
+            DeviceId = certEntity!.Identity.DeviceId,
+            TokenId=certEntity!.Identity.TokenId,
+            RequestId=certEntity!.Identity.RequestId,
+            UserTCKN=certEntity!.Identity.UserTCKN,
+        };
+        return result;
     }
     private static Response<CertificateQueryOutputDto> Get(Certificate? certEntity)
     {
