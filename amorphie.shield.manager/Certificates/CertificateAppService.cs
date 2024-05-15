@@ -37,7 +37,7 @@ public class CertificateAppService : ICertificateAppService
             userTckn: input.Identity.UserTCKN,
             instanceId: input.InstanceId,
             serialNumber: certificate.SerialNumber().ToString(),
-            publicCert: certificate.ExportCer(),
+            publicCert: _certificateManager.GetRSAPublicKeyFromCertificate(certificate),
             thumbprint: certificate.Thumbprint,
             expirationDate: certificate.NotAfter.ToUniversalTime()
         );
@@ -45,7 +45,7 @@ public class CertificateAppService : ICertificateAppService
         certEntity.Active();
         await _certificateRepository.InsertAsync(certEntity);
 
-        return Response<CertificateCreateOutputDto>.Success("", new CertificateCreateOutputDto
+        return Response<CertificateCreateOutputDto>.Success("success", new CertificateCreateOutputDto
         {
             Id = certEntity.Id,
             Certificate= certificate.ExportCer(),

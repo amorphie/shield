@@ -21,9 +21,11 @@ public class TransactionAppService : ITransactionAppService
         _certificateManager = certificateManager;
     }
 
-    public async Task<Response<CreateTransactionOutput>> CreateAsync(CreateTransactionInput input, CancellationToken cancellationToken = default)
+    public async Task<Response<CreateTransactionOutput>> CreateAsync(CreateTransactionInput input,
+        CancellationToken cancellationToken = default)
     {
-        var certificate = await _certificateRepository.FindByDeviceAndUserActiveAsync(input.Identity.DeviceId, input.Identity.UserTCKN, cancellationToken);
+        var certificate = await _certificateRepository.FindByDeviceAndUserActiveAsync(input.Identity.DeviceId,
+            input.Identity.UserTCKN, cancellationToken);
         input.Data ??= new Dictionary<string, object>();
         input.Data.Add("nonce", Guid.NewGuid().ToString());
         var transaction = new Transaction(
@@ -34,7 +36,6 @@ public class TransactionAppService : ITransactionAppService
         );
 
         var encryptedData = _certificateManager.Encrypt(certificate.PublicCert, transaction.Data);
-        transaction.SignSignatured(encryptedData);
         await _transactionRepository.InsertAsync(transaction, cancellationToken);
         return Response<CreateTransactionOutput>.Success(
             "success",
@@ -46,13 +47,29 @@ public class TransactionAppService : ITransactionAppService
         VerifyTransactionInput input, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetAsync(transactionId, cancellationToken);
+        var certificate = await _certificateRepository.FindByDeviceAndUserActiveAsync(
+            input.Identity.DeviceId,
+            input.Identity.UserTCKN, 
+            cancellationToken
+            );
+        
+        var isVerify = _certificateManager.Verify(
+            transaction.Data,
+            input.SignData,
+            certificate.PublicCert
+        );
+
+        if (!isVerify)
+        {
+            throw new TransactionSignedException();
+        }
 
         transaction.Verified(
-            input.Identity.RequestId,
-            JsonSerializer.Serialize(input.RawData),
-            input.SignData);
+            requestId: input.Identity.RequestId,
+            payloadData: JsonSerializer.Serialize(input.RawData),
+            signSignature: input.SignData
+        );
 
-        await _transactionRepository.UpdateAsync(transaction, cancellationToken);
         return Response<VerifyTransactionOutput>.Success(
             "success",
             new VerifyTransactionOutput(true)
