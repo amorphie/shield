@@ -93,21 +93,11 @@ public sealed class Transaction : EntityBase
         {
             throw new TransactionSignedException();
         }
-
-        if (SignSignature != signSignature)
-        {
-            throw new TransactionSignedException();
-        }
-
+        
         SignedAt = DateTime.UtcNow;
         Status = TransactionStatus.Signed;
         SignSignature = signSignature;
         AddActivity(requestId, payloadData);
-    }
-
-    public void SignSignatured(string signSignatureData)
-    {
-        SignSignature = signSignatureData;
     }
 
     /// <summary>
