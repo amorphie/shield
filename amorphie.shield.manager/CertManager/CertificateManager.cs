@@ -169,7 +169,7 @@ public class CertificateManager
         }
     }   
 
-    public string Dencrypt(string privatePhase, string payloadData)
+    public string Decrypt(string privatePhase, string payloadData)
     {
         using (RSA rsa = RSA.Create(4096))
         {

@@ -86,16 +86,16 @@ public class TransactionAppServiceTest
 
         Assert.Equal("Success", transactionCreateResponse.Result.Status);
 
-        //Data dencrypt
-        var dencryptData = _certificateManager.Dencrypt(
+        //Data decrypt
+        var decryptData = _certificateManager.Decrypt(
             certificateResponse.Data.PrivateKey!,
-            transactionCreateResponse.Data.EncrptData
+            transactionCreateResponse.Data.EncryptData
         );
 
         //Data signed
         var signedData = _certificateManager.Signed(
             certificateResponse.Data.PrivateKey!,
-            dencryptData
+            decryptData
         );
 
         //Data verified
