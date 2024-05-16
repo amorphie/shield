@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
 using amorphie.shield.Transactions;
-using Microsoft.EntityFrameworkCore;
 
 namespace amorphie.shield.app;
 
@@ -63,10 +57,10 @@ public class TransactionAppServiceTest
     {
         var identity = new Shared.IdentityDto
         {
-            DeviceId = AppConsts.DeviceId,
+            DeviceId = Guid.NewGuid().ToString(),
             RequestId = Guid.NewGuid(),
             TokenId = Guid.NewGuid(),
-            UserTCKN = AppConsts.UserTckn
+            UserTCKN = "54545"
         };
 
         //Create certificate
@@ -91,30 +85,24 @@ public class TransactionAppServiceTest
         });
 
         Assert.Equal("Success", transactionCreateResponse.Result.Status);
-        
+
         //Data dencrypt
         var dencryptData = _certificateManager.Dencrypt(
-           certificateResponse.Data.PrivateKey!,
+            certificateResponse.Data.PrivateKey!,
             transactionCreateResponse.Data.EncrptData
-           );
+        );
 
         //Data signed
         var signedData = _certificateManager.Signed(
             certificateResponse.Data.PrivateKey!,
             dencryptData
-            );
-        
+        );
+
         //Data verified
         var response = await _transactionAppService.VerifyAsync(transactionCreateResponse.Data.TransactionId,
             new VerifyTransactionInput()
             {
-                Identity = new Shared.IdentityDto
-                {
-                    DeviceId = AppConsts.DeviceId,
-                    RequestId = Guid.NewGuid(),
-                    TokenId = Guid.NewGuid(),
-                    UserTCKN = AppConsts.UserTckn
-                },
+                Identity = identity,
                 RawData = transactionCreateResponse.Data.RawData,
                 SignData = signedData
             });

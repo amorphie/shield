@@ -1,5 +1,6 @@
 using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
+using amorphie.shield.Revokes;
 using amorphie.shield.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public class Startup
         services.AddScoped<CertificateManager>();
         services.AddScoped<ITransactionAppService, TransactionAppService>();
         services.AddScoped<ICertificateAppService, CertificateAppService>();
+        services.AddScoped<IRevokeAppService, RevokeAppService>();
         services.AddScoped<CertificateRepository>();
         services.AddScoped<TransactionRepository>();
     }
