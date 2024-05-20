@@ -91,6 +91,15 @@ namespace amorphie.shield.Extension
             return privateKeyPem;
         }
 
+
+        public static void ExportPrivateKey(this RSA rsa, string name)
+        {
+            var privateKeyPem = rsa.ExportPrivateKey();
+
+            File.WriteAllText($"{name}.private_raw.key", Convert.ToBase64String(rsa.ExportRSAPrivateKey(), Base64FormattingOptions.None));
+            File.WriteAllText($"{name}.private.key", privateKeyPem);
+        }
+
         public static void ExportPublicKey(this RSACryptoServiceProvider rsa, string name)
         {
             // Export the public key in PEM format

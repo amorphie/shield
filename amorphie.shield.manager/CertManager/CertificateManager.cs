@@ -2,7 +2,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using amorphie.shield.Extension;
-using Org.BouncyCastle.Asn1.X509;
 
 namespace amorphie.shield.CertManager;
 
@@ -76,7 +75,7 @@ public class CertificateManager
         }
     }
 
-    public string Encrypt(string publicPhase, string payloadData)
+    public string EncryptDataWithPublicKey(string publicPhase, string payloadData)
     {
         using (RSA rsa = RSA.Create(4096))
         {
@@ -85,7 +84,42 @@ public class CertificateManager
             return Convert.ToBase64String(rsa.Encrypt(dataBytes, RSAEncryptionPadding.Pkcs1));
         }
     }
-    
+    /// <summary>
+    /// Added to simulate client decryption
+    /// </summary>
+    /// <param name="encryptedData"></param>
+    /// <param name="privateKeyPem"></param>
+    /// <returns></returns>
+    public string DecryptDataWithPrivateKey(byte[] encryptedData, string privateKeyPem)
+    {
+        using (RSA rsa = RSA.Create(4096))
+        {
+            rsa.ImportFromPem(privateKeyPem.ToCharArray());
+
+            byte[] decryptedBytes = rsa.Decrypt(encryptedData, RSAEncryptionPadding.Pkcs1);
+            return Encoding.UTF8.GetString(decryptedBytes);
+        }
+    }
+    /// <summary>
+    /// Added to simulate client sign
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="privateKeyPem"></param>
+    /// <returns></returns>
+    public string SignDataWithRSA(string data, string privateKeyPem)
+    {
+        using (RSA rsa = RSA.Create())
+        {
+            rsa.ImportFromPem(privateKeyPem.ToCharArray());
+
+            byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+            byte[] hash = SHA256.HashData(dataBytes);
+
+            var signBytes= rsa.SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            return Convert.ToBase64String(signBytes);
+        }
+    }
+
     public bool Verify(string dataToVerify, string signedData, string publicPhase)
     {
         using (RSA rsa = RSA.Create(4096))

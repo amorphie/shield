@@ -1,39 +1,42 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>amorphie.shield</RootNamespace>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>amorphie.shield</RootNamespace>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
-    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
-    <PackageReference Include="Dapr.Client" Version="1.13.1" />
-    <PackageReference Include="Dapr.AspNetCore" Version="1.13.1" />
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>$(AssemblyName).test</_Parameter1>
+		</AssemblyAttribute>
+		<PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
+		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
+		<PackageReference Include="Dapr.Client" Version="1.13.1" />
+		<PackageReference Include="Dapr.AspNetCore" Version="1.13.1" />
 
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
 
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
 
-    <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
+		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
 
-    <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
-    <PackageReference Include="amorphie.core" Version="1.1.30" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.4" />
-    <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-  </ItemGroup>
+		<PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+		<PackageReference Include="amorphie.core" Version="1.1.30" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.4" />
+		<PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\amorphie.shield.data\amorphie.shield.data.csproj" />
-    <ProjectReference Include="..\amorphie.shield.core\amorphie.shield.core.csproj" />
-    <ProjectReference Include="..\amorphie.shield.manager\amorphie.shield.app.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\amorphie.shield.data\amorphie.shield.data.csproj" />
+		<ProjectReference Include="..\amorphie.shield.core\amorphie.shield.core.csproj" />
+		<ProjectReference Include="..\amorphie.shield.manager\amorphie.shield.app.csproj" />
+	</ItemGroup>
 
 </Project>

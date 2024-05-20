@@ -1,14 +1,5 @@
-using System.Security.Cryptography.X509Certificates;
-using amorphie.core.Module.minimal_api;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using amorphie.core.Identity;
-using amorphie.core.Extension;
 using amorphie.shield.Certificates;
-using amorphie.shield.CertManager;
-using amorphie.shield.Extension;
-using Microsoft.AspNetCore.Routing;
 
 namespace amorphie.shield.Module;
 
@@ -29,12 +20,12 @@ public static class CertificateModule
 
     }
 
-    static async ValueTask<IResult> CreateAsync([FromBody] CertificateCreateInputDto certificateCreateRequest, [FromServices] ICertificateAppService certificateService)
+    internal static async ValueTask<IResult> CreateAsync([FromBody] CertificateCreateInputDto certificateCreateRequest, [FromServices] ICertificateAppService certificateService)
     {
         var dbResponse = await certificateService.CreateAsync(certificateCreateRequest);
         return ApiResult.CreateResult(dbResponse);
     }
-    static async ValueTask<IResult> GetBySerialAsync(
+    internal static async ValueTask<IResult> GetBySerialAsync(
     [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
     [FromServices] ICertificateAppService certificateService
     )
@@ -42,7 +33,7 @@ public static class CertificateModule
         var dbResponse = await certificateService.GetBySerialAsync(certificateSerialNumber);
         return ApiResult.CreateResult(dbResponse);
     }
-    static async ValueTask<IResult> GetBySerialAndUserTcknAsync(
+    internal static async ValueTask<IResult> GetBySerialAndUserTcknAsync(
     [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
     [FromRoute(Name = "userTckn")] string userTckn,
     [FromServices] ICertificateAppService certificateService
@@ -51,7 +42,7 @@ public static class CertificateModule
         var dbResponse = await certificateService.GetBySerialAndUserTcknAsync(certificateSerialNumber, userTckn);
         return ApiResult.CreateResult(dbResponse);
     }
-    static async ValueTask<IResult> GetBySerialAndUserTcknAndXTokenIdAsync(
+    internal static async ValueTask<IResult> GetBySerialAndUserTcknAndXTokenIdAsync(
     [FromRoute(Name = "certificateSerialNumber")] string certificateSerialNumber,
     [FromRoute(Name = "userTckn")] string userTckn,
     [FromRoute(Name = "xTokenId")] Guid xTokenId,
@@ -61,7 +52,7 @@ public static class CertificateModule
         var dbResponse = await certificateService.GetBySerialAndUserTcknAndXTokenIdAsync(certificateSerialNumber, userTckn, xTokenId);
         return ApiResult.CreateResult(dbResponse);
     }
-    static async ValueTask<IResult> GetByUserTcknAndXTokenIdAsync(
+    internal static async ValueTask<IResult> GetByUserTcknAndXTokenIdAsync(
     [FromRoute(Name = "userTckn")] string userTckn,
     [FromRoute(Name = "xTokenId")] Guid xTokenId,
     [FromServices] ICertificateAppService certificateService
@@ -70,7 +61,7 @@ public static class CertificateModule
         var dbResponse = await certificateService.GetByUserTcknAndXTokenIdAsync(userTckn, xTokenId);
         return ApiResult.CreateResult(dbResponse);
     }
-    static async ValueTask<IResult> GetByUserTcknAndXDeviceIdAsync(
+    internal static async ValueTask<IResult> GetByUserTcknAndXDeviceIdAsync(
     [FromRoute(Name = "userTckn")] string userTckn,
     [FromRoute(Name = "xDeviceId")] string xDeviceId,
     [FromServices] ICertificateAppService certificateService
@@ -80,7 +71,7 @@ public static class CertificateModule
         return ApiResult.CreateResult(dbResponse);
     }
 
-    static async ValueTask<IResult> GetByDeviceIdAsync(
+    internal static async ValueTask<IResult> GetByDeviceIdAsync(
     [FromRoute(Name = "xDeviceId")] string xDeviceId,
     [FromServices] ICertificateAppService certificateService
     )
