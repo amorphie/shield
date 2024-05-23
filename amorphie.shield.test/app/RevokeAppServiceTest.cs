@@ -2,7 +2,7 @@ using amorphie.shield.Certificates;
 using amorphie.shield.Revokes;
 using amorphie.shield.Shared;
 
-namespace amorphie.shield.app;
+namespace amorphie.shield.test;
 
 public class RevokeAppServiceTest
 {

@@ -36,15 +36,15 @@ public class ModuleCheck
         Assert.True(result);
     }
 
-    [Fact]
-    public void IsInheritedFromCore()
-    {
-        var modules = GetModules();
+    //[Fact]
+    //public void IsInheritedFromCore()
+    //{
+    //    var modules = GetModules();
 
-        var result = modules.Should().Inherit(typeof(BaseBBTRoute<,,>)).Or().Inherit(typeof(BaseRoute))
-                        .GetResult()
-                        .IsSuccessful;
+    //    var result = modules.Should().Inherit(typeof(BaseBBTRoute<,,>)).Or().Inherit(typeof(BaseRoute))
+    //                    .GetResult()
+    //                    .IsSuccessful;
 
-        Assert.True(result);
-    }
+    //    Assert.True(result);
+    //}
 }

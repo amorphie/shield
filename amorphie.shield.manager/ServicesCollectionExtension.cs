@@ -12,7 +12,7 @@ public static class ServicesCollectionExtension
 
         services.AddScoped<ICertificateAppService, CertificateAppService>();
         services.AddScoped<IRevokeAppService, RevokeAppService>();
-        services.AddSingleton<ICaManager, FileCaManager>();
+        services.AddSingleton<ICaManager, VaultCaManager>();
         services.AddScoped<CertificateManager>();
         services.AddScoped<ITransactionAppService, TransactionAppService>();
     }

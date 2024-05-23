@@ -2,7 +2,7 @@ using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
 using amorphie.shield.Transactions;
 
-namespace amorphie.shield.app;
+namespace amorphie.shield.test;
 
 public class TransactionAppServiceTest
 {

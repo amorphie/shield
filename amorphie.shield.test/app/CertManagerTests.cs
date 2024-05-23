@@ -1,9 +1,9 @@
 ﻿using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
+using amorphie.shield.Extension;
 
-namespace amorphie.shield.app;
+
+namespace amorphie.shield.test;
 public class CertManagerTests
 {
     private readonly string password = "password";
@@ -20,31 +20,34 @@ public class CertManagerTests
         //var resultCa = caManager.Create(cn, password);
         ICaManager caManager = new FileCaManager();
         var certManager = new CertificateManager(caManager);
-        var result = certManager.Create("", "testCert", password);
+        var result = certManager.CreateAsync("", "testCert", password);
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<CertificateCreateDto>(result);
+        Assert.IsType<X509Certificate2>(result);
     }
 
     [Fact]
-    public void Create_GetCaFromProvider_Then_CreateCert()
+    public async Task Create_GetCaFromProvider_Then_CreateCertAsync()
     {
         ICaManager caManager = new FileCaManager();
         var certManager = new CertificateManager(caManager);
-        var result = certManager.Create("", "testCert", password);
+        var result = await certManager.CreateAsync("", "testCert", password);
+
+        result.ExportPfx("clientCertPfx", password);
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<CertificateCreateDto>(result);
+        Assert.IsType<X509Certificate2>(result);
     }
     [Fact]
-    public void CreateAndVerify_GetCaFromProvider_Then_CreateCert()
+    public async Task CreateAndVerify_Then_CreateCertAsync()
     {
         ICaManager caManager = new FileCaManager();
         var certManager = new CertificateManager(caManager);
-        var result = certManager.Create("", "testCert", password);
+        var result = await certManager.CreateAsync("", "testCert", password);
         var cerRSAPublicKey = certManager.GetRSAPublicKeyFromCertificate(result);
         var cerPrivateKey = result.GetRSAPrivateKey().ExportRSAPrivateKeyPem();
         var dataTobeEnc = "ibra";
+
         var encResult = certManager.EncryptDataWithPublicKey(cerRSAPublicKey, dataTobeEnc);
 
         var encBytes = Convert.FromBase64String(encResult);
@@ -53,18 +56,16 @@ public class CertManagerTests
 
         var signedData = certManager.SignDataWithRSA(decryptResult, cerPrivateKey);
         var verify = certManager.Verify(decryptResult, signedData, cerRSAPublicKey);
-        //var signature = resultCa.GetSignature();
-        //var tbs = result.Cert.GetTbsCertificate();
-        //var alg = signed.SignatureAlgorithm;
         // Assert
         Assert.NotNull(result);
-        Assert.IsType<CertificateCreateDto>(result);
+        Assert.IsType<X509Certificate2>(result);
     }
 
-    public string ReadCaFromFile()
-    {
-        var caFile = "Certficate\\ca.cer";
-        return File.ReadAllText(caFile);
-    }
 }
+
+
+
+
+
+
 

@@ -4,6 +4,6 @@ using System.Security.Cryptography;
 namespace amorphie.shield.CertManager;
 public interface ICaManager
 {
-    X509Certificate2 GetFromPfx();
+    ValueTask<X509Certificate2> GetFromPfxAsync();
 }
 

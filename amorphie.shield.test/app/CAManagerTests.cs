@@ -2,8 +2,10 @@
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using amorphie.shield.Extension;
+using Bogus.DataSets;
+using System.Runtime.ConstrainedExecution;
 
-namespace amorphie.shield.app;
+namespace amorphie.shield.test;
 public class CaManagerTests
 {
     [Fact]
@@ -11,15 +13,23 @@ public class CaManagerTests
     {
         var cn = "dev.ca.burganbank";
         var password = "password";
-
+        var name = "ca";
+        var caBasePath = Path.Combine("c:\\cert\\ca\\");
         var caManager = new CaManager();
         var result = caManager.Create(cn, password);
-        var cer =result.ExportCer();
-        var privateKey = result.GetRSAPrivateKey()?.ExportPrivateKey();
-        
+        var caCerPem = result.ExportCertificatePem();
+        var caPfx = result.Export(X509ContentType.Pkcs12, password);
+        File.WriteAllBytes($"{caBasePath}{name}.pfx", caPfx);
+        File.WriteAllText($"{caBasePath}{name}.cer", caCerPem);
 
-        result.ExportCer("newCer");
-        result.GetRSAPrivateKey()?.ExportPrivateKey("newPrivateKey");
+
+        var privateKey = result.GetRSAPrivateKey()?.ExportPrivateKey();
+        File.WriteAllText($"{caBasePath}{name}.private.key", privateKey);
+
+
+
+        var publicKey = result.GetRSAPrivateKey()?.ExportRSAPublicKeyPem();
+        File.WriteAllText($"{caBasePath}{name}.public.key", publicKey);
 
         // Assert
         Assert.NotNull(result);
@@ -40,9 +50,9 @@ public class CaManagerTests
         var certificate = new X509Certificate2(certBytes, pfxPassword);
 
         // Read the private key
-        var privateKeyText = File.ReadAllText(keyPath);
+        var privateKeyString = File.ReadAllText(keyPath);
         var privateKey = RSA.Create();
-        privateKey.ImportFromPem(privateKeyText.ToCharArray());
+        privateKey.ImportFromPem(privateKeyString.ToCharArray());
 
         // Combine into an X509Certificate2 object with the private key
         var certWithKey = certificate.CopyWithPrivateKey(privateKey);
@@ -54,7 +64,7 @@ public class CaManagerTests
         // Assert
         Assert.NotNull(pfxBytes);
         //Assert.IsType<CertificateCreateDto>(result);
-    } 
+    }
     [Fact]
     public void Inspect_Pfx()
     {

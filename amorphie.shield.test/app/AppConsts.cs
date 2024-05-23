@@ -1,4 +1,4 @@
-namespace amorphie.shield.app;
+namespace amorphie.shield.test;
 
 public static class AppConsts
 {

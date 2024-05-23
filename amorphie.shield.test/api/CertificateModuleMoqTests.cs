@@ -17,7 +17,7 @@ public class CertificateModuleMoqTests
 
         mock.Setup(m => m.GetByDeviceIdAsync(deviceId))
         .ReturnsAsync(
-            Response<CertificateQueryOutputDto>.Success("")
+            Response<CertificateQueryByDeviceOutputDto>.Success("")
         );
 
         // Act

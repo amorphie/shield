@@ -24,7 +24,7 @@ public class CertificateAppService : ICertificateAppService
 
     public async Task<Response<CertificateCreateOutputDto>> CreateAsync(CertificateCreateInputDto input)
     {
-        var certificate = _certificateManager.Create(
+        var certificate = await _certificateManager.CreateAsync(
             input.Identity.UserTCKN,
             "testClient",
             "password");
@@ -45,53 +45,62 @@ public class CertificateAppService : ICertificateAppService
         certEntity.Active();
         await _certificateRepository.InsertAsync(certEntity);
 
-        return Response<CertificateCreateOutputDto>.Success("success", new CertificateCreateOutputDto
+        return Response<CertificateCreateOutputDto>.Success("", new CertificateCreateOutputDto
         {
             Id = certEntity.Id,
-            Certificate= certificate.ExportCer(),
-            PrivateKey=certificate.GetRSAPrivateKey()?.ExportPrivateKey(),
+            Certificate = certificate.ExportCer(),
+            PrivateKey = certificate.GetRSAPrivateKey()?.ExportPrivateKey(),
             ExpirationDate = certificate.NotAfter.ToUniversalTime()
         });
     }
 
     public async Task<Response<CertificateQueryOutputDto>> GetBySerialAsync(string serialNumber)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.SerialNumber == serialNumber);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.SerialNumber == serialNumber && w.Status == CertificateStatus.Active);
         return Get(certEntity);
     }
     public async Task<Response<CertificateQueryOutputDto>> GetBySerialAndUserTcknAsync(string serialNumber, string userTckn)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.SerialNumber == serialNumber && w.Identity.UserTCKN == userTckn);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.SerialNumber == serialNumber && w.Identity.UserTCKN == userTckn && w.Status == CertificateStatus.Active);
         return Get(certEntity);
     }
     public async Task<Response<CertificateQueryOutputDto>> GetBySerialAndUserTcknAndXTokenIdAsync(string serialNumber, string userTckn, Guid xTokenId)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.SerialNumber == serialNumber && w.Identity.UserTCKN == userTckn && w.Identity.TokenId == xTokenId);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.SerialNumber == serialNumber && w.Identity.UserTCKN == userTckn && w.Identity.TokenId == xTokenId && w.Status == CertificateStatus.Active);
         return Get(certEntity);
     }
 
     public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXTokenIdAsync(string userTckn, Guid xTokenId)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.TokenId == xTokenId);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.TokenId == xTokenId && w.Status == CertificateStatus.Active);
         return Get(certEntity);
     }
 
     public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, string xDeviceId)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.DeviceId == xDeviceId);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.DeviceId == xDeviceId && w.Status == CertificateStatus.Active);
         return Get(certEntity);
     }
 
-    public async Task<Response<CertificateQueryOutputDto>> GetByDeviceIdAsync(string xDeviceId)
+    public async Task<Response<CertificateQueryByDeviceOutputDto>> GetByDeviceIdAsync(string xDeviceId)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.DeviceId == xDeviceId);
-        var result = Get(certEntity);
-        result.Data.Identity = new Shared.IdentityDto
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.DeviceId == xDeviceId && w.Status == CertificateStatus.Active);
+        var resultBase = Get(certEntity);
+        var result = new Response<CertificateQueryByDeviceOutputDto>
         {
-            DeviceId = certEntity!.Identity.DeviceId,
-            TokenId=certEntity!.Identity.TokenId,
-            RequestId=certEntity!.Identity.RequestId,
-            UserTCKN=certEntity!.Identity.UserTCKN,
+            Data = new CertificateQueryByDeviceOutputDto
+            {
+                ExpirationDate = resultBase.Data.ExpirationDate,
+                Valid = resultBase.Data.Valid,
+                Identity = new Shared.IdentityDto
+                {
+                    DeviceId = certEntity!.Identity.DeviceId,
+                    TokenId = certEntity!.Identity.TokenId,
+                    RequestId = certEntity!.Identity.RequestId,
+                    UserTCKN = certEntity!.Identity.UserTCKN,
+                }
+            },
+            Result = new Result(core.Enums.Status.Success, resultBase.Result.Message)
         };
         return result;
     }

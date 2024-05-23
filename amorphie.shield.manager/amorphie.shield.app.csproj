@@ -8,11 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
-    <PackageReference Include="itext.kernel.core" Version="1.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\amorphie.shield.core\amorphie.shield.core.csproj" />
     <ProjectReference Include="..\amorphie.shield.data\amorphie.shield.data.csproj" />
   </ItemGroup>

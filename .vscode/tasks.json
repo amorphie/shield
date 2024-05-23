@@ -40,32 +40,12 @@
         },
         {
             "appId": "amorphie-shield",
-            "appPort": 4200,
-            "httpPort": 42010,
-            "grpcPort": 42011,
+            "appPort": 6200,
+            "httpPort": 62010,
+            "grpcPort": 62011,
             "label": "dapr-debug-amorphie-shield",
             "type": "dapr",
             "dependsOn": "build-amorphie-shield",
-            "componentsPath": "Dapr/Components"
-        },
-        {
-            "appId": "amorphie-shield-hub",
-            "appPort": 4201,
-            "httpPort": 42020,
-            "grpcPort": 42021,
-            "label": "dapr-debug-amorphie-shield-hub",
-            "type": "dapr",
-            "dependsOn": "build-amorphie-shield-hub",
-            "componentsPath": "Dapr/Components",
-        },
-        {
-            "appId": "amorphie-shield-worker",
-            "appPort": 4202,
-            "httpPort": 42030,
-            "grpcPort": 42031,
-            "label": "dapr-debug-amorphie-shield-worker",
-            "type": "dapr",
-            "dependsOn": "build-amorphie-shield-worker",
             "componentsPath": "Dapr/Components"
         },
         {
@@ -73,16 +53,6 @@
             "label": "daprd-down-amorphie-shield",
             "type": "daprd-down",
             "dependsOn": "stop-mocks",
-        },
-        {
-            "appId": "amorphie-shield-hub",
-            "label": "daprd-down-amorphie-shield-hub",
-            "type": "daprd-down"
-        },
-        {
-            "appId": "amorphie-shield-worker",
-            "label": "daprd-down-amorphie-shield-worker",
-            "type": "daprd-down"
         }
     ]
 }

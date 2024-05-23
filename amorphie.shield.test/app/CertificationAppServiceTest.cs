@@ -1,6 +1,6 @@
 using amorphie.shield.Certificates;
 
-namespace amorphie.shield.app;
+namespace amorphie.shield.test;
 public class CertificationAppServiceTest
 {
     private readonly ICertificateAppService _certificateAppService;
