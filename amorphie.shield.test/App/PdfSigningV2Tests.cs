@@ -114,7 +114,7 @@ public class PdfSigningV2Tests
             signer.SetFieldName(signer.GetNewSigFieldName());
             signer.SetSignatureCreator("ibrahim the sign creator");
             signer.SetLocation("Burgan Bank Ankara");
-            signer.SetPageRect(new iText.Kernel.Geom.Rectangle(100, 800, 300, 100));
+            signer.SetPageRect(new iText.Kernel.Geom.Rectangle(100, 500, 300, 100));
             var ssa = new iText.Forms.Form.Element.SignatureFieldAppearance("IdOfAppearance");
             ssa.SetSignerName("ibrahim karakayalı");
             ssa.SetPageNumber(1);
@@ -129,9 +129,9 @@ public class PdfSigningV2Tests
             ssa.SetHeight(14);
 
             signer.SetSignatureAppearance(ssa);
-            //var tsaUrl = "https://freetsa.org/tsr";
-            //// Timestamp the signature
-            //TSAClientBouncyCastle tsaClient = new TSAClientBouncyCastle(tsaUrl);
+            var tsaUrl = "https://freetsa.org/tsr";
+            // Timestamp the signature
+            TSAClientBouncyCastle tsaClient = new TSAClientBouncyCastle(tsaUrl);
             //signer.Timestamp(tsaClient, null);
 
 
@@ -146,7 +146,7 @@ public class PdfSigningV2Tests
             //PdfFont font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
             //sap.SetLayer2Font(font);
 
-            signer.SignDetached(privateSignature, signChain, null, null, null, 0, PdfSigner.CryptoStandard.CMS);
+            signer.SignDetached(privateSignature, signChain, null, null, tsaClient, 0, PdfSigner.CryptoStandard.CMS);
         }
 
 
