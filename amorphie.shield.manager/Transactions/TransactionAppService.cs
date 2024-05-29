@@ -35,7 +35,7 @@ public class TransactionAppService : ITransactionAppService
             JsonSerializer.Serialize(input.Data)
         );
 
-        var encryptedData = _certificateManager.EncryptDataWithPublicKey(certificate.PublicCert, transaction.Data);
+        var encryptedData = CertificateManager.EncryptDataWithPublicKey(certificate.PublicCert, transaction.Data);
         await _transactionRepository.InsertAsync(transaction, cancellationToken);
         return Response<CreateTransactionOutput>.Success(
             "success",
@@ -53,7 +53,7 @@ public class TransactionAppService : ITransactionAppService
             cancellationToken
             );
         
-        var isVerify = _certificateManager.Verify(
+        var isVerify = CertificateManager.Verify(
             transaction.Data,
             input.SignData,
             certificate.PublicCert

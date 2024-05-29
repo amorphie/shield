@@ -1,3 +1,4 @@
+using amorphie.shield.CertManager;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,14 @@ public class TestWebApplicationFactory<TProgram>
             if (descriptor != null)
             {
                 services.Remove(descriptor);
+            }
+            var vaultDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(ICaManager));
+
+            if (vaultDescriptor != null)
+            {
+                services.Remove(vaultDescriptor);
+                services.AddSingleton<ICaManager, FileCaManager>();
+
             }
 
             services.AddDbContext<ShieldDbContext>(options =>

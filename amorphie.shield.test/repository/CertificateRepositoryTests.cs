@@ -1,5 +1,5 @@
 ﻿using amorphie.shield.Certificates;
-using amorphie.shield.Helpers;
+using amorphie.shield.test.Helpers;
 
 namespace amorphie.shield.Repository;
 

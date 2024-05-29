@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using amorphie.shield.Extension;
 using Bogus.DataSets;
 using System.Runtime.ConstrainedExecution;
+using amorphie.shield.test.Helpers;
+using amorphie.core.Base;
 
 namespace amorphie.shield.test;
 public class CaManagerTests
@@ -12,24 +14,23 @@ public class CaManagerTests
     public void Create_ReturnsCaCreateDto_WhenCaCreated()
     {
         var cn = "dev.ca.burganbank";
-        var password = "password";
+
         var name = "ca";
-        var caBasePath = Path.Combine("c:\\cert\\ca\\");
         var caManager = new CaManager();
-        var result = caManager.Create(cn, password);
+        var result = caManager.Create(cn, StaticData.Password);
         var caCerPem = result.ExportCertificatePem();
-        var caPfx = result.Export(X509ContentType.Pkcs12, password);
-        File.WriteAllBytes($"{caBasePath}{name}.pfx", caPfx);
-        File.WriteAllText($"{caBasePath}{name}.cer", caCerPem);
+        var caPfx = result.Export(X509ContentType.Pkcs12, StaticData.Password);
+        File.WriteAllBytes($"{StaticData.CaCertBasePath}{name}.pfx", caPfx);
+        File.WriteAllText($"{StaticData.CaCertBasePath}{name}.cer", caCerPem);
 
 
         var privateKey = result.GetRSAPrivateKey()?.ExportPrivateKey();
-        File.WriteAllText($"{caBasePath}{name}.private.key", privateKey);
+        File.WriteAllText($"{StaticData.CaCertBasePath}{name}.private.key", privateKey);
 
 
 
         var publicKey = result.GetRSAPrivateKey()?.ExportRSAPublicKeyPem();
-        File.WriteAllText($"{caBasePath}{name}.public.key", publicKey);
+        File.WriteAllText($"{StaticData.CaCertBasePath}{name}.public.key", publicKey);
 
         // Assert
         Assert.NotNull(result);
@@ -38,46 +39,38 @@ public class CaManagerTests
     [Fact]
     public void Generate_Pfx_From_Cer_And_PrivateKey()
     {
-        //string certPath = Path.Combine("Certficate", "ca.cer"); // Path to your certificate file
-        string certPath = "newCer.cer"; // Path to your certificate file
-        //string keyPath = ""; // Path to your certificate file
-        string keyPath = "newPrivateKey.private.key";  // Path to your private key file
         string pfxPath = Path.Combine("Certficate", "ca.pfx");          // Path where the PFX file will be saved
-        string pfxPassword = "password";        // Password for the PFX file
 
         // Read the certificate
-        var certBytes = File.ReadAllBytes(certPath);
-        var certificate = new X509Certificate2(certBytes, pfxPassword);
+        var certBytes = CertificateHelper.GetClientCertFromFile();
+        var certificate = new X509Certificate2(certBytes, StaticData.Password);
 
         // Read the private key
-        var privateKeyString = File.ReadAllText(keyPath);
-        var privateKey = RSA.Create();
-        privateKey.ImportFromPem(privateKeyString.ToCharArray());
+        var privateKey = CertificateHelper.GetClientPrivateKeyFromFile_RSA();
 
         // Combine into an X509Certificate2 object with the private key
         var certWithKey = certificate.CopyWithPrivateKey(privateKey);
 
         // Export to PFX
-        byte[] pfxBytes = certWithKey.Export(X509ContentType.Pfx, pfxPassword);
+        byte[] pfxBytes = certWithKey.Export(X509ContentType.Pfx, StaticData.Password);
         File.WriteAllBytes(pfxPath, pfxBytes);
 
         // Assert
         Assert.NotNull(pfxBytes);
-        //Assert.IsType<CertificateCreateDto>(result);
     }
     [Fact]
-    public void Inspect_Pfx()
+    public void Inspect_Certificate()
     {
-        //string certPath = Path.Combine("Certficate", "ca.cer"); // Path to your certificate file
+
         string certPath = "newCer.cer"; // Path to your certificate file
         //string keyPath = ""; // Path to your certificate file
         string keyPath = "newPrivateKey.private.key";  // Path to your private key file
-        string pfxPath = Path.Combine("Certficate", "ca.pfx");          // Path where the PFX file will be saved
-        string pfxPassword = "password";        // Password for the PFX file
+
+
 
         // Read the certificate
         var certBytes = File.ReadAllBytes(certPath);
-        var certificate = new X509Certificate2(certBytes, pfxPassword);
+        var certificate = new X509Certificate2(certBytes, StaticData.Password);
 
         // Read the private key
         var privateKeyText = File.ReadAllText(keyPath);
@@ -87,16 +80,15 @@ public class CaManagerTests
         // Combine into an X509Certificate2 object with the private key
         var certWithKey = certificate.CopyWithPrivateKey(privateKey);
         var friendlyName = certWithKey.FriendlyName;
-        var ThumbPrint = certWithKey.Thumbprint;
+        var thumbPrint = certWithKey.Thumbprint;
         var serialNumber = certWithKey.SerialNumber;
         var issuer = certWithKey.Issuer;
-        // Export to PFX
-        byte[] pfxBytes = certWithKey.Export(X509ContentType.Pfx, pfxPassword);
-        File.WriteAllBytes(pfxPath, pfxBytes);
+
 
         // Assert
-        Assert.NotNull(pfxBytes);
-        //Assert.IsType<CertificateCreateDto>(result);
+        Assert.IsType<X509Certificate2>(certificate);
+
+        Assert.NotNull(thumbPrint);
     }
 }
 

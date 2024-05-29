@@ -1,6 +1,7 @@
 ﻿using amorphie.shield.Certificates;
+using System.Security.Cryptography;
 
-namespace amorphie.shield.Helpers;
+namespace amorphie.shield.test.Helpers;
 
 public static class CertificateHelper
 {
@@ -24,6 +25,39 @@ public static class CertificateHelper
             ModifiedAt = DateTime.UtcNow,
             ModifiedBy = Guid.NewGuid()
         };
+    }
+    
+    public static RSA GetClientPrivateKeyFromFile_RSA()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.private.key");
+        var privateKeyString = File.ReadAllText(privateKeyPath);
+        var privateKey = RSA.Create();
+        privateKey.ImportFromPem(privateKeyString.ToCharArray());
+        return privateKey;
+    }    
+    public static byte[] GetClientPfxFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.pfx");
+        return File.ReadAllBytes(privateKeyPath);
+
+    }    
+    public static byte[] GetClientCertFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.cer");
+        return File.ReadAllBytes(privateKeyPath);
+
+    }
+    public static string GetClientPrivateKeyFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.private.key");
+        return File.ReadAllText(privateKeyPath);
+
+    }
+    public static string GetClientPublicKeyFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.public.key");
+        return File.ReadAllText(privateKeyPath);
+
     }
 }
 

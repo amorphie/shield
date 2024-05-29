@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using amorphie.shield.Extension;
+using System.Formats.Asn1;
 
 namespace amorphie.shield.CertManager;
 
@@ -41,6 +42,18 @@ public class CertificateManager
 
             request.CertificateExtensions.Add(keyUsage);
 
+            request.CertificateExtensions.Add(
+            new X509BasicConstraintsExtension(false, false, 0, false));
+
+            request.CertificateExtensions.Add(
+                new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+            request.CertificateExtensions.Add(
+                new X509AuthorityKeyIdentifierExtension());
+
+            request.CertificateExtensions.Add(GenerateOcsp());
+            
+
             var serialNumber = GenerateSerialNumber();
             // BigInteger a = new BigInteger(serialNumber);
 
@@ -55,6 +68,111 @@ public class CertificateManager
         }
     }
 
+
+    public static X509Extension GenerateOcsp()
+    {
+        List<byte[]> encodedUrls = new List<byte[]>();
+        List<byte[]> encodedSequences = new List<byte[]>();
+
+        AsnWriter writer = new AsnWriter(AsnEncodingRules.DER);
+
+        writer.WriteObjectIdentifier("1.3.6.1.5.5.7.48.2");
+        encodedUrls.Add(writer.Encode());
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        writer.WriteCharacterString(
+            UniversalTagNumber.IA5String,
+            "http://ocsp.example.com",
+            new Asn1Tag(TagClass.ContextSpecific, 6)
+        );
+
+        encodedUrls.Add(writer.Encode());
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        using (writer.PushSequence())
+        {
+            foreach (byte[] encodedName in encodedUrls)
+            {
+                writer.WriteEncodedValue(encodedName);
+            }
+        }
+        encodedSequences.Add(writer.Encode());
+
+        encodedUrls = new List<byte[]>();
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        writer.WriteObjectIdentifier("1.3.6.1.5.5.7.48.1");
+        encodedUrls.Add(writer.Encode());
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        writer.WriteCharacterString(
+            UniversalTagNumber.IA5String,
+            "http://ocsp.sectigo.com/",
+            new Asn1Tag(TagClass.ContextSpecific, 6)
+        );
+
+        encodedUrls.Add(writer.Encode());
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        using (writer.PushSequence())
+        {
+            foreach (byte[] encodedName in encodedUrls)
+            {
+                writer.WriteEncodedValue(encodedName);
+            }
+        }
+        encodedSequences.Add(writer.Encode());
+
+
+
+        
+        encodedUrls = new List<byte[]>();
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        writer.WriteObjectIdentifier("2.5.29.31");
+        encodedUrls.Add(writer.Encode());
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        writer.WriteCharacterString(
+            UniversalTagNumber.IA5String,
+            "http://crl.globalsign.com/gsrsaovsslca2018.crl",
+            new Asn1Tag(TagClass.ContextSpecific, 6)
+        );
+
+        encodedUrls.Add(writer.Encode());
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        using (writer.PushSequence())
+        {
+            foreach (byte[] encodedName in encodedUrls)
+            {
+                writer.WriteEncodedValue(encodedName);
+            }
+        }
+        encodedSequences.Add(writer.Encode());
+
+
+
+
+
+
+        writer = new AsnWriter(AsnEncodingRules.DER);
+        using (writer.PushSequence())
+        {
+            foreach (byte[] encodedSequence in encodedSequences)
+            {
+                writer.WriteEncodedValue(encodedSequence);
+            }
+        }
+
+        return new X509Extension(
+            new Oid("1.3.6.1.5.5.7.1.1"),
+            writer.Encode(),
+            false);
+    }
+    /// <summary>
+    /// certificate.GetRSAPrivateKey().ExportRSAPrivateKeyPem() test thisstatement then replace
+    /// </summary>
+    /// <param name="certificate"></param>
+    /// <returns></returns>
     public string GetRSAPublicKeyFromCertificate(X509Certificate2 certificate)
     {
         // Sertifikadan RSA public key'i al
@@ -75,7 +193,7 @@ public class CertificateManager
         }
     }
 
-    public string EncryptDataWithPublicKey(string publicPhase, string payloadData)
+    public static string EncryptDataWithPublicKey(string publicPhase, string payloadData)
     {
         using (RSA rsa = CreateRSAFromPem(publicPhase))
         {
@@ -89,7 +207,7 @@ public class CertificateManager
     /// <param name="encryptedData"></param>
     /// <param name="privateKeyPem"></param>
     /// <returns></returns>
-    public string DecryptDataWithPrivateKey(byte[] encryptedData, string privateKeyPem)
+    public static string DecryptDataWithPrivateKey(byte[] encryptedData, string privateKeyPem)
     {
         using (RSA rsa = RSA.Create(4096))
         {
@@ -105,7 +223,7 @@ public class CertificateManager
     /// <param name="data"></param>
     /// <param name="privateKeyPem"></param>
     /// <returns></returns>
-    public string SignDataWithRSA(string data, string privateKeyPem)
+    public static string SignDataWithRSA(string data, string privateKeyPem)
     {
         using (RSA rsa = RSA.Create())
         {
@@ -119,7 +237,7 @@ public class CertificateManager
         }
     }
 
-    public bool Verify(string dataToVerify, string signedData, string publicPhase)
+    public static bool Verify(string dataToVerify, string signedData, string publicPhase)
     {
         using (RSA rsa = CreateRSAFromPem(publicPhase))
         {
@@ -142,10 +260,14 @@ public class CertificateManager
         // string header = "-----BEGIN CERTIFICATE-----";
         // string footer = "-----END CERTIFICATE-----";
         string header = "-----BEGIN PUBLIC KEY-----";
+        string header2 = "-----BEGIN RSA PUBLIC KEY-----";
         string footer = "-----END PUBLIC KEY-----";
+        string footer2 = "-----END RSA PUBLIC KEY-----";
         string base64 = pem
             .Replace(header, "")
-            .Replace(footer, "")
+            .Replace(footer, "") 
+            .Replace(header2, "")
+            .Replace(footer2, "")
             .Replace("\n", "")
             .Replace("\r", "");
 
