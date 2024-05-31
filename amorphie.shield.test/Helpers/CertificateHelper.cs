@@ -26,7 +26,9 @@ public static class CertificateHelper
             ModifiedBy = Guid.NewGuid()
         };
     }
-    
+
+    #region Client Read From File
+
     public static RSA GetClientPrivateKeyFromFile_RSA()
     {
         var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.private.key");
@@ -34,18 +36,6 @@ public static class CertificateHelper
         var privateKey = RSA.Create();
         privateKey.ImportFromPem(privateKeyString.ToCharArray());
         return privateKey;
-    }    
-    public static byte[] GetClientPfxFromFile()
-    {
-        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.pfx");
-        return File.ReadAllBytes(privateKeyPath);
-
-    }    
-    public static byte[] GetClientCertFromFile()
-    {
-        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.cer");
-        return File.ReadAllBytes(privateKeyPath);
-
     }
     public static string GetClientPrivateKeyFromFile()
     {
@@ -53,11 +43,64 @@ public static class CertificateHelper
         return File.ReadAllText(privateKeyPath);
 
     }
+    public static byte[] GetClientPfxFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.pfx");
+        return File.ReadAllBytes(privateKeyPath);
+
+    }
+    public static byte[] GetClientCertFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.cer");
+        return File.ReadAllBytes(privateKeyPath);
+
+    }
+    #endregion
+
     public static string GetClientPublicKeyFromFile()
     {
         var privateKeyPath = Path.Combine(StaticData.ClientCertBasePath, "client.public.key");
         return File.ReadAllText(privateKeyPath);
 
     }
+
+    #region Ca Read From File
+    public static RSA GetCaPrivateKeyFromFile_RSA()
+    {
+        var privateKeyPath = Path.Combine(StaticData.CaCertBasePath, "ca.private.key");
+        var privateKeyString = File.ReadAllText(privateKeyPath);
+        var privateKey = RSA.Create();
+        privateKey.ImportFromPem(privateKeyString.ToCharArray());
+        return privateKey;
+    }
+    public static string GetCaPrivateKeyFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.CaCertBasePath, "ca.private.key");
+        return File.ReadAllText(privateKeyPath);
+
+    }
+    public static byte[] GetCaPfxFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.CaCertBasePath, "ca.pfx");
+        return File.ReadAllBytes(privateKeyPath);
+
+    }
+    public static byte[] GetCaCertFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.CaCertBasePath, "ca.cer");
+        return File.ReadAllBytes(privateKeyPath);
+
+    }
+
+    public static string GetCaPublicKeyFromFile()
+    {
+        var privateKeyPath = Path.Combine(StaticData.CaCertBasePath, "ca.public.key");
+        return File.ReadAllText(privateKeyPath);
+
+    }
+    #endregion
+
+
+
 }
 

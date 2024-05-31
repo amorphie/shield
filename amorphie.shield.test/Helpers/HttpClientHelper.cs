@@ -1,15 +1,13 @@
 ﻿using amorphie.shield.test.Helpers;
 
 namespace amorphie.shield.test.usecase.Helpers;
-public class HttpClientHelper
+public static class HttpClientHelper
 {
     public static HttpClient GetHttpClient()
     {
         var _httpClient = new HttpClient
         {
             BaseAddress = new Uri("http://localhost:4201/"),
-
-
         };
         _httpClient.DefaultRequestHeaders.Add("X-Device-Id", StaticData.XDeviceId.ToString());
         _httpClient.DefaultRequestHeaders.Add("X-Token-Id", StaticData.XTokenId.ToString());

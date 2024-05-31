@@ -4,7 +4,7 @@ namespace amorphie.shield.CertManager;
 public class FileCaManager : ICaManager
 {
     private readonly string password = "password";
-    private readonly string caPfxFileName = Path.Combine("Certficate", "ca.pfx");
+    private readonly string caPfxFileName = Path.Combine(@"c:\cert\ca\", "ca.pfx");
 
 
     public FileCaManager() { }

@@ -1,5 +1,6 @@
 using amorphie.shield.Certificates;
 using amorphie.shield.CertManager;
+using amorphie.shield.test.Helpers;
 using amorphie.shield.Transactions;
 
 namespace amorphie.shield.test;
@@ -23,25 +24,18 @@ public class TransactionAppServiceTest
     [Fact]
     public async Task Assert_Transaction_Create_Async()
     {
-        var identity = new Shared.IdentityDto
-        {
-            DeviceId = AppConsts.DeviceId,
-            RequestId = Guid.NewGuid(),
-            TokenId = Guid.NewGuid(),
-            UserTCKN = AppConsts.UserTckn
-        };
         var certificate = await _certificateAppService.CreateAsync(new CertificateCreateInputDto()
         {
-            Identity = identity,
-            InstanceId = Guid.NewGuid()
+            Identity = StaticData.IdentityDto,
+            InstanceId = StaticData.InstanceId,
         });
 
         Assert.Equal("Success", certificate.Result.Status);
 
         var response = await _transactionAppService.CreateAsync(new CreateTransactionInput()
         {
-            Identity = identity,
-            InstanceId = Guid.NewGuid(),
+            Identity = StaticData.IdentityDto,
+            InstanceId = StaticData.InstanceId,
             Data = new Dictionary<string, object>
             {
                 { "name", "shield" },
@@ -55,28 +49,20 @@ public class TransactionAppServiceTest
     [Fact]
     public async Task Assert_Transaction_Verify_Async()
     {
-        var identity = new Shared.IdentityDto
-        {
-            DeviceId = Guid.NewGuid().ToString(),
-            RequestId = Guid.NewGuid(),
-            TokenId = Guid.NewGuid(),
-            UserTCKN = "54545"
-        };
 
-        //Create certificate
-        var certificateResponse = await _certificateAppService.CreateAsync(new CertificateCreateInputDto()
-        {
-            Identity = identity,
-            InstanceId = Guid.NewGuid()
-        });
+        var cerRSAPublicKey = CertificateHelper.GetClientPublicKeyFromFile();
 
-        Assert.Equal("Success", certificateResponse.Result.Status);
+        Assert.NotNull(cerRSAPublicKey);
+
+        var cerPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile();
+        Assert.NotNull(cerPrivateKey);
+
 
         //Create transaction
         var transactionCreateResponse = await _transactionAppService.CreateAsync(new CreateTransactionInput()
         {
-            Identity = identity,
-            InstanceId = Guid.NewGuid(),
+            Identity = StaticData.IdentityDto,
+            InstanceId = StaticData.InstanceId,
             Data = new Dictionary<string, object>
             {
                 { "name", "shield" },
@@ -88,13 +74,13 @@ public class TransactionAppServiceTest
 
         //Data decrypt
         var decryptData = _certificateManager.Decrypt(
-            certificateResponse.Data.PrivateKey!,
+            cerPrivateKey,
             transactionCreateResponse.Data.EncryptData
         );
 
         //Data signed
         var signedData = _certificateManager.Signed(
-            certificateResponse.Data.PrivateKey!,
+            cerPrivateKey,
             decryptData
         );
 
@@ -102,7 +88,7 @@ public class TransactionAppServiceTest
         var response = await _transactionAppService.VerifyAsync(transactionCreateResponse.Data.TransactionId,
             new VerifyTransactionInput()
             {
-                Identity = identity,
+                Identity = StaticData.IdentityDto,
                 RawData = transactionCreateResponse.Data.RawData,
                 SignData = signedData
             });

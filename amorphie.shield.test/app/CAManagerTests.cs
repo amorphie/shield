@@ -2,10 +2,7 @@
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using amorphie.shield.Extension;
-using Bogus.DataSets;
-using System.Runtime.ConstrainedExecution;
 using amorphie.shield.test.Helpers;
-using amorphie.core.Base;
 
 namespace amorphie.shield.test;
 public class CaManagerTests
@@ -23,11 +20,8 @@ public class CaManagerTests
         File.WriteAllBytes($"{StaticData.CaCertBasePath}{name}.pfx", caPfx);
         File.WriteAllText($"{StaticData.CaCertBasePath}{name}.cer", caCerPem);
 
-
         var privateKey = result.GetRSAPrivateKey()?.ExportPrivateKey();
         File.WriteAllText($"{StaticData.CaCertBasePath}{name}.private.key", privateKey);
-
-
 
         var publicKey = result.GetRSAPrivateKey()?.ExportRSAPublicKeyPem();
         File.WriteAllText($"{StaticData.CaCertBasePath}{name}.public.key", publicKey);
@@ -39,21 +33,19 @@ public class CaManagerTests
     [Fact]
     public void Generate_Pfx_From_Cer_And_PrivateKey()
     {
-        string pfxPath = Path.Combine("Certficate", "ca.pfx");          // Path where the PFX file will be saved
-
         // Read the certificate
-        var certBytes = CertificateHelper.GetClientCertFromFile();
+        var certBytes = CertificateHelper.GetCaCertFromFile();
         var certificate = new X509Certificate2(certBytes, StaticData.Password);
 
         // Read the private key
-        var privateKey = CertificateHelper.GetClientPrivateKeyFromFile_RSA();
+        var privateKey = CertificateHelper.GetCaPrivateKeyFromFile_RSA();
 
         // Combine into an X509Certificate2 object with the private key
         var certWithKey = certificate.CopyWithPrivateKey(privateKey);
 
         // Export to PFX
         byte[] pfxBytes = certWithKey.Export(X509ContentType.Pfx, StaticData.Password);
-        File.WriteAllBytes(pfxPath, pfxBytes);
+        File.WriteAllBytes(Path.Combine(StaticData.CaCertBasePath, "ca.pfx"), pfxBytes);
 
         // Assert
         Assert.NotNull(pfxBytes);
@@ -79,7 +71,7 @@ public class CaManagerTests
 
         // Combine into an X509Certificate2 object with the private key
         var certWithKey = certificate.CopyWithPrivateKey(privateKey);
-        var friendlyName = certWithKey.FriendlyName;
+        //var friendlyName = certWithKey.FriendlyName;
         var thumbPrint = certWithKey.Thumbprint;
         var serialNumber = certWithKey.SerialNumber;
         var issuer = certWithKey.Issuer;
@@ -87,8 +79,9 @@ public class CaManagerTests
 
         // Assert
         Assert.IsType<X509Certificate2>(certificate);
-
         Assert.NotNull(thumbPrint);
+        Assert.NotNull(serialNumber);
+        Assert.NotNull(issuer);
     }
 }
 
