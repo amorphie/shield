@@ -4,6 +4,7 @@ using amorphie.core.Swagger;
 using amorphie.shield.ExceptionHandling;
 using amorphie.shield.Swagger;
 using amorphie.shield.Validator;
+using amorphie.shield.HealthChecks;
 using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.Json;
@@ -15,8 +16,7 @@ namespace amorphie.shield.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection RegisterDbContext(this IServiceCollection services,
-        ConfigurationManager builderConfiguration)
+    private static IServiceCollection RegisterDbContext(this IServiceCollection services)
     {
         if (services == null)
         {
@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection RegisterApiVersioning(this IServiceCollection services)
+    private static IServiceCollection RegisterApiVersioning(this IServiceCollection services)
     {
         services.AddApiVersioning(options =>
         {
@@ -61,7 +61,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection RegisterSwagger(this IServiceCollection services)
+    private static IServiceCollection RegisterSwagger(this IServiceCollection services)
     {
         services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>();
         // Add services to the container.
@@ -84,9 +84,13 @@ public static class ServiceCollectionExtensions
             options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.SerializerOptions.WriteIndented = true;
         });
-
-        //builder.Services.AddDaprClient();
-        //builder.Services.AddHealthChecks().AddBBTHealthCheck();
+        services.AddDaprClient();
+        services.RegisterDbContext();
+        services.RegisterApiVersioning();
+        services.RegisterSwagger();
+        services.RegisterServices();
+        services.RegisterExceptionHandling();
+        services.RegisterHealthCheck();
 
         services.AddScoped<IBBTIdentity, FakeIdentity>();
         services.AddValidatorsFromAssemblyContaining<CertificateValidator>(includeInternalTypes: true);
@@ -94,14 +98,29 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection RegisterExceptionHandling(this IServiceCollection services)
+    private static IServiceCollection RegisterHealthCheck(this IServiceCollection services)
+    {
+        // var postgreSql = builder.Configuration["shielddb"];
+        //TODO: Remove
+        var postgreSql =
+            "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
+        
+        services.AddHealthChecks()
+            .AddNpgSql(postgreSql, tags: new[] { "PostgresDb" })
+            .AddDapr(tags: new[] { "Dapr" })
+            .AddDaprSecretStore(tags: new[] { "DaprSecretStore" });
+
+        return services;
+    }
+
+    private static IServiceCollection RegisterExceptionHandling(this IServiceCollection services)
     {
         services.AddExceptionHandler<ExceptionHandler>();
         services.AddProblemDetails();
         return services;
     }
     
-    public static IServiceCollection RegisterServices(this IServiceCollection services)
+    private static IServiceCollection RegisterServices(this IServiceCollection services)
     {
         services.AddDataServices();
         services.AddManagerServices();
