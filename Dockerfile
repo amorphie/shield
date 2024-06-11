@@ -18,6 +18,7 @@ ARG configuration=Release
 RUN dotnet build "amorphie.shield.csproj" -c $configuration -o /app/build
 
 FROM build AS publish
+ARG configuration=Release
 RUN dotnet publish "amorphie.shield.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
