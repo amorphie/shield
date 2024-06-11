@@ -12,6 +12,9 @@ COPY ["amorphie.shield/amorphie.shield.csproj", "amorphie.shield/"]
 RUN dotnet restore "amorphie.shield/amorphie.shield.csproj"
 COPY . .
 WORKDIR "/src/amorphie.shield"
+
+ARG configuration=Release
+
 RUN dotnet build "amorphie.shield.csproj" -c $configuration -o /app/build
 
 FROM build AS publish
