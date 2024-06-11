@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
-RUN adduser amorphie-shielduser --disabled-password --gecos "" && chown -R amorphie-contractuser:amorphie-shielduser /app
+RUN adduser amorphie-shielduser --disabled-password --gecos "" && chown -R amorphie-shielduser:amorphie-shielduser /app
 USER amorphie-shielduser
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
