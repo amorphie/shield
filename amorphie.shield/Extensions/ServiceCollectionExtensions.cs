@@ -16,26 +16,21 @@ namespace amorphie.shield.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    private static IServiceCollection RegisterDbContext(this IServiceCollection services)
+    private static IServiceCollection RegisterDbContext(this IServiceCollection services, string connectionString)
     {
         if (services == null)
         {
             throw new ArgumentNullException(nameof(services));
         }
-
-        // await builder.Configuration.AddVaultSecrets("amorphie-secretstore", new string[] { "amorphie-shield" });
-        var postgreSql = builderConfiguration["shielddb"];
-        //TODO: Remove
-        //var postgreSql =
-        //    "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
-
         services.AddDbContext<ShieldDbContext>
-            (options => {
-                options.UseNpgsql(postgreSql, b => {
+            (options =>
+            {
+                options.UseNpgsql(connectionString, b =>
+                {
                     b.MigrationsAssembly("amorphie.shield.data");
                     b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                    });
                 });
+            });
         return services;
     }
 
@@ -85,12 +80,13 @@ public static class ServiceCollectionExtensions
             options.SerializerOptions.WriteIndented = true;
         });
         services.AddDaprClient();
-        services.RegisterDbContext();
+        string connStr = configuration["shielddb"] ?? throw new KeyNotFoundException("Connection string expected");
+        services.RegisterDbContext(connStr);
         services.RegisterApiVersioning();
         services.RegisterSwagger();
         services.RegisterServices(configuration);
         services.RegisterExceptionHandling();
-        services.RegisterHealthCheck();
+        services.RegisterHealthCheck(connStr);
 
         services.AddScoped<IBBTIdentity, FakeIdentity>();
         services.AddValidatorsFromAssemblyContaining<CertificateValidator>(includeInternalTypes: true);
@@ -98,15 +94,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection RegisterHealthCheck(this IServiceCollection services)
+    private static IServiceCollection RegisterHealthCheck(this IServiceCollection services, string connStr)
     {
-        // var postgreSql = builder.Configuration["shielddb"];
-        //TODO: Remove
-        var postgreSql =
-            "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
-        
         services.AddHealthChecks()
-            .AddNpgSql(postgreSql, tags: new[] { "PostgresDb" })
+            .AddNpgSql(connStr, tags: new[] { "PostgresDb" })
             .AddDapr(tags: new[] { "Dapr" })
             .AddDaprSecretStore(tags: new[] { "DaprSecretStore" });
 
@@ -119,12 +110,12 @@ public static class ServiceCollectionExtensions
         services.AddProblemDetails();
         return services;
     }
-    
+
     public static IServiceCollection RegisterServices(this IServiceCollection services, ConfigurationManager configuration)
     {
         services.AddDataServices();
         services.AddManagerServices(configuration);
         return services;
-    }    
+    }
 
 }
