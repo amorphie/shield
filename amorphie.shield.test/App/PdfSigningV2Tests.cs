@@ -1,6 +1,5 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-
 using iText.Bouncycastle.Crypto;
 using iText.Bouncycastle.X509;
 using iText.Commons.Bouncycastle.Cert;
@@ -19,18 +18,31 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using amorphie.shield.test.Helpers;
-
-
-
+using iText.Commons.Bouncycastle.Crypto;
+using iText.Kernel.Exceptions;
+using iText.Bouncycastleconnector;
+using iText.Commons.Bouncycastle.Asn1.X500;
+using iText.Commons.Bouncycastle.Asn1;
+using iText.Commons.Bouncycastle;
+using iText.Commons.Bouncycastle.Cert.Ocsp;
+using iText.Commons.Utils;
+using iText.Commons.Bouncycastle.Asn1.Ocsp;
+using iText.Commons.Bouncycastle.Asn1.X509;
+using iText.Commons.Bouncycastle.Crypto.Generators;
+using iText.Commons.Bouncycastle.Math;
+using System.Collections;
+using amorphie.shield.Extension;
 
 namespace amorphie.shield.test;
 public class PdfSigningV2Tests
 {
+    private readonly string certName = "vaultclient";
+    private readonly string  inputFile = Path.Combine("c:\\cert\\pdf", "dummy.pdf");
+
     [Fact]
     public void Pdf_Modify_Test()
     {
-        var inputFile = Path.Combine("Certficate", "dummy.pdf");
-        var outputFile = Path.Combine("Certficate", "dummy_modified.pdf");
+        var outputFile = Path.Combine("c:\\cert\\pdf", "dummy_modified.pdf");
         var textToAdd = "Sample text";
         using var writer = new PdfWriter(outputFile);
         using var outputDocument = new PdfDocument(writer);
@@ -57,18 +69,44 @@ public class PdfSigningV2Tests
     [Fact]
     public async Task Pdf_PAdes_Sign_TestAsync()
     {
-        var sourcePdf = Path.Combine("Certficate", "dummy.pdf");
-        var output = Path.Combine("Certficate", "dummy_sign.pdf");
+        var output = Path.Combine("c:\\cert\\pdf", "dummy_sign.pdf");
         var certBasePath = Path.Combine("c:\\cert\\client\\");
-        var caBasePath = Path.Combine("c:\\cert\\ca\\ca.cer");
 
-        var pfxKeyPath = Path.Combine(certBasePath, "client.pfx");
-        X509Certificate2 cert = new X509Certificate2(pfxKeyPath, StaticData.Password, X509KeyStorageFlags.Exportable);
+        var clientPfxPath = Path.Combine(certBasePath, $"{certName}.pfx");
+        X509Certificate2 clientCert = new X509Certificate2(clientPfxPath, StaticData.Password, X509KeyStorageFlags.Exportable);
+        Org.BouncyCastle.X509.X509Certificate clientBouncyCastleCert = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate(clientCert);
+        var itextFormattedClientCert = new X509CertificateBC(clientBouncyCastleCert);
 
-        var privateKey = CertificateHelper.GetClientPrivateKeyFromFile_RSA();
+
+        var clientPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile_RSA(certName);
+        AsymmetricCipherKeyPair clientKeyPair = DotNetUtilities.GetKeyPair(clientPrivateKey);
+        RsaPrivateCrtKeyParameters bcPrivateKey = (RsaPrivateCrtKeyParameters)clientKeyPair.Private;
+        var clientPrivateKeySignature = new PrivateKeySignature(new PrivateKeyBC(bcPrivateKey), DigestAlgorithms.SHA256);
+
+        var caPrivateKey = CertificateHelper.GetVaultCaPrivateKeyFromFile_RSA();
+        AsymmetricCipherKeyPair caPrivateKeyPair = DotNetUtilities.GetKeyPair(caPrivateKey);
+        var caPrivateKeyBC = new PrivateKeyBC(caPrivateKeyPair.Private);
+
+        var caCertBytes = CertificateHelper.GetVaultCaCertFromFile();
+        var caCert = new X509Certificate2(caCertBytes, StaticData.Password);
+        Org.BouncyCastle.X509.X509Certificate caCertBC = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate(caCert);
+        var bcCaCert = new X509CertificateBC(caCertBC);
+
+
+        //Silinecek
+        var tsaCaCertBytes = CertificateHelper.GetTsaCaCertFromFile();
+        var tsaCaCert = new X509Certificate2(tsaCaCertBytes, StaticData.Password);
+        Org.BouncyCastle.X509.X509Certificate bctsaCaCert = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate(tsaCaCert);
+
+        //Silinecek
+        var tsaClientCertBytes = CertificateHelper.GetTsaCertFromFile();
+        var tsaClientCert = new X509Certificate2(tsaClientCertBytes, StaticData.Password);
+        Org.BouncyCastle.X509.X509Certificate bcTsaClientCert = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate(tsaClientCert);
+
+
 
         //    // Load PDF
-        PdfReader pdfReader = new PdfReader(sourcePdf);
+        PdfReader pdfReader = new PdfReader(inputFile);
         //PdfDocument pdfDocument = new PdfDocument(pdfReader);
 
         // Load certificate and private key
@@ -76,19 +114,24 @@ public class PdfSigningV2Tests
 
 
         // Convert certificate to BouncyCastle format
-        Org.BouncyCastle.X509.X509Certificate bcCert = Org.BouncyCastle.Security.DotNetUtilities.FromX509Certificate(cert);
-        AsymmetricCipherKeyPair keyPair = DotNetUtilities.GetKeyPair(privateKey);
+
+
 
         // Extract private key object
-        RsaPrivateCrtKeyParameters bcPrivateKey = (RsaPrivateCrtKeyParameters)keyPair.Private;
 
-        var pkSig = new PrivateKeySignature(new PrivateKeyBC(bcPrivateKey), DigestAlgorithms.SHA256);
 
         // Prepare signing elements
         IX509Certificate[] signChain = new IX509Certificate[2];
-        signChain[0] = new X509CertificateBC(bcCert);
-        signChain[1] = new X509CertificateBC(bcCert);
+        signChain[0] = itextFormattedClientCert;
+        signChain[1] = bcCaCert;
+        //signChain[2] = new X509CertificateBC(bctsaCaCert);
+        //signChain[3] = new X509CertificateBC(bcTsaClientCert);
+
         IExternalSignature privateSignature = new PrivateKeySignature(new PrivateKeyBC(bcPrivateKey), DigestAlgorithms.SHA256);
+
+
+        ICrlClient crlClient = new TestCrlClient().AddBuilderForCertIssuer(bcCaCert, caPrivateKeyBC);
+        TestOcspClient ocspClient = new TestOcspClient().AddBuilderForCertIssuer(bcCaCert, caPrivateKeyBC);
 
 
         // Sign the document
@@ -111,7 +154,6 @@ public class PdfSigningV2Tests
             var ssa = new iText.Forms.Form.Element.SignatureFieldAppearance("IdOfAppearance");
             ssa.SetSignerName("ibrahim karakayalı");
             ssa.SetPageNumber(1);
-
             ssa.SetBold();
             ssa.SetItalic();
             ssa.SetUnderline();
@@ -128,21 +170,28 @@ public class PdfSigningV2Tests
             TSAClientBouncyCastle tsaClient = new TSAClientBouncyCastle(tsaUrl);
             tsaClient.SetTSAInfo(new CustomITSAInfoBouncyCastle());
 
-
+            //var crlurl = CertificateUtil.GetCRLURL(signChain[0]);
 #pragma warning disable S125 // Sections of code should not be commented out
             //TestOcspClient ocspClient = new TestOcspClient().AddBuilderForCertIssuer(signChain[0], new PrivateKeyBC(bcPrivateKey));
             //signer.SetOcspClient(ocspClient);
+            //signer.SetCrlClient(new CrlClientOnline("http://localhost:8200/v1/pki/crl"));
 
-            //signer.SignWithBaselineLTAProfile(signerProperties: properties, chain: signChain, externalSignature: pkSig, tsaClient);
-            signer.SignWithBaselineLTAProfile(properties, signChain, new PrivateKeyBC(bcPrivateKey), tsaClient);
+            //ICrlClient crlClient = new TestCrlClient().AddBuilderForCertIssuer(caCert, caPrivateKey);
+            signer
+                .SetOcspClient(ocspClient)
+                //.SetCrlClient(crlClient)
+                ;
+
+            signer.SignWithBaselineLTAProfile(signerProperties: properties, chain: signChain, externalSignature: clientPrivateKeySignature, tsaClient);
+            //signer.SignWithBaselineLTAProfile(properties, signChain, new PrivateKeyBC(bcPrivateKey), tsaClient);
 #pragma warning restore S125 // Sections of code should not be commented out
             //signer.Timestamp(tsaClient);
         }
 
 
         // Assert
-        Assert.NotNull(cert);
-        Assert.IsType<X509Certificate2>(cert);
+        Assert.NotNull(clientCert);
+        Assert.IsType<X509Certificate2>(clientCert);
     }
 
 
@@ -150,21 +199,20 @@ public class PdfSigningV2Tests
     [Fact]
     public async Task Pdf_Sign_TestAsync()
     {
-        var sourcePdf = Path.Combine("Certficate", "dummy.pdf");
-        var output = Path.Combine("Certficate", "dummy_sign.pdf");
+        var output = Path.Combine("c:\\cert\\pdf", "dummy_sign.pdf");
         var certBasePath = Path.Combine("c:\\cert\\client\\");
 
-        var pfxKeyPath = Path.Combine(certBasePath, "client.pfx");
+        var pfxKeyPath = Path.Combine(certBasePath, $"{certName}.pfx");
         X509Certificate2 cert = new X509Certificate2(pfxKeyPath, StaticData.Password, X509KeyStorageFlags.Exportable);
 
 
-        var privateKeyPath = Path.Combine(certBasePath, "client.private.key");
+        var privateKeyPath = Path.Combine(certBasePath, $"{certName}.private.key");
         var privateKeyString = File.ReadAllText(privateKeyPath);
         var privateKey = RSA.Create();
         privateKey.ImportFromPem(privateKeyString.ToCharArray());
 
         //    // Load PDF
-        PdfReader pdfReader = new PdfReader(sourcePdf);
+        PdfReader pdfReader = new PdfReader(inputFile);
         //PdfDocument pdfDocument = new PdfDocument(pdfReader);
 
         // Load certificate and private key
@@ -242,7 +290,7 @@ public class PdfSigningV2Tests
     [Fact]
     public void Pdf_Verify_Test()
     {
-        var signed = Path.Combine("Certficate", "dummy_sign.pdf");
+        var signed = Path.Combine("c:\\cert\\pdf", "dummy_sign.pdf");
         using (PdfReader reader = new PdfReader(signed))
         {
             using (PdfDocument pdfDoc = new PdfDocument(reader))
@@ -343,3 +391,312 @@ public static class UnitConverter
 
 
 
+
+public class TestCrlClient : ICrlClient
+{
+    private readonly IList<TestCrlBuilder> crlBuilders;
+
+    public TestCrlClient()
+    {
+        crlBuilders = new List<TestCrlBuilder>();
+    }
+
+    public virtual TestCrlClient AddBuilderForCertIssuer(TestCrlBuilder crlBuilder
+        )
+    {
+        crlBuilders.Add(crlBuilder);
+        return this;
+    }
+
+    public virtual TestCrlClient AddBuilderForCertIssuer(IX509Certificate issuerCert
+        , IPrivateKey issuerPrivateKey)
+    {
+        DateTime yesterday = TimeTestUtil.TEST_DATE_TIME.AddDays(-1);
+        crlBuilders.Add(new TestCrlBuilder(issuerCert, issuerPrivateKey, yesterday));
+        return this;
+    }
+
+    public virtual ICollection<byte[]> GetEncoded(IX509Certificate checkCert, String url)
+    {
+        return crlBuilders.Select((testCrlBuilder) =>
+        {
+            try
+            {
+                return testCrlBuilder.MakeCrl();
+            }
+            catch (Exception ignore)
+            {
+                throw new PdfException(ignore);
+            }
+        }
+        ).ToList();
+    }
+}
+
+public class TestCrlBuilder
+{
+    private static readonly IBouncyCastleFactory FACTORY = BouncyCastleFactoryCreator.GetFactory();
+    private const String SIGN_ALG = "SHA256withRSA";
+
+    private readonly IPrivateKey issuerPrivateKey;
+    private readonly IX509V2CrlGenerator crlBuilder;
+
+    private DateTime nextUpdate = TimeTestUtil.TEST_DATE_TIME.AddDays(30);
+
+    public TestCrlBuilder(IX509Certificate issuerCert, IPrivateKey issuerPrivateKey, DateTime thisUpdate)
+    {
+        IX500Name issuerCertSubjectDn = issuerCert.GetSubjectDN();
+        this.crlBuilder = FACTORY.CreateX509v2CRLBuilder(issuerCertSubjectDn, thisUpdate);
+        this.issuerPrivateKey = issuerPrivateKey;
+    }
+
+    public TestCrlBuilder(IX509Certificate issuerCert, IPrivateKey issuerPrivateKey)
+        : this(issuerCert, issuerPrivateKey, TimeTestUtil.TEST_DATE_TIME.AddDays(-1))
+    {
+    }
+
+    public virtual void SetNextUpdate(DateTime nextUpdate)
+    {
+        this.nextUpdate = nextUpdate;
+    }
+
+    /// <summary>See CRLReason</summary>
+    public virtual void AddCrlEntry(IX509Certificate certificate, DateTime revocationDate, int reason)
+    {
+        crlBuilder.AddCRLEntry(certificate.GetSerialNumber(), revocationDate, reason);
+    }
+
+    public virtual void AddCrlEntry(IX509Certificate certificate, int reason)
+    {
+        crlBuilder.AddCRLEntry(certificate.GetSerialNumber(), nextUpdate, reason);
+    }
+
+    public virtual void AddExtension(IDerObjectIdentifier objectIdentifier, bool isCritical,
+        IAsn1Encodable extension)
+    {
+        crlBuilder.AddExtension(objectIdentifier, isCritical, extension);
+    }
+
+    public virtual byte[] MakeCrl()
+    {
+        crlBuilder.SetNextUpdate(nextUpdate);
+        IX509Crl crl = crlBuilder.Build(FACTORY.CreateContentSigner(SIGN_ALG, issuerPrivateKey));
+        return crl.GetEncoded();
+    }
+}
+
+public class TimeTestUtil
+{
+    private const int MILLIS_IN_DAY = 86_400_000;
+
+    // This method is used to trim the hours of the day, so that two dates could be compared
+    // with a day accuracy. We need such a method since in .NET the signing DateTime extracted
+    // from the signature depends on the current time zone set on the machine.
+    // TODO DEVSIX-5812 Remove the method
+    public static long GetFullDaysMillis(double millis)
+    {
+        return (long)millis / MILLIS_IN_DAY;
+    }
+
+    /// <summary>A date time value to be used in test instead of current date time to get consistent results</summary>
+    public static DateTime TEST_DATE_TIME = new DateTime(2000, 2, 14, 14, 14, 2, DateTimeKind.Utc);
+}
+
+public class TestOcspClient : IOcspClient
+{
+    private static readonly IBouncyCastleFactory BOUNCY_CASTLE_FACTORY = BouncyCastleFactoryCreator.GetFactory
+        ();
+
+    private readonly IDictionary<String, TestOcspResponseBuilder> issuerIdToResponseBuilder = new LinkedDictionary
+        <String, TestOcspResponseBuilder>();
+
+    public virtual TestOcspClient AddBuilderForCertIssuer(IX509Certificate cert, IPrivateKey privateKey)
+    {
+        issuerIdToResponseBuilder.Put(cert.GetSerialNumber().ToString(16), new TestOcspResponseBuilder(cert, privateKey
+            ));
+        return this;
+    }
+
+    public virtual TestOcspClient AddBuilderForCertIssuer(IX509Certificate cert, TestOcspResponseBuilder builder
+        )
+    {
+        issuerIdToResponseBuilder.Put(cert.GetSerialNumber().ToString(16), builder);
+        return this;
+    }
+
+    public virtual byte[] GetEncoded(IX509Certificate checkCert, IX509Certificate issuerCert, String url)
+    {
+        byte[] bytes = null;
+        try
+        {
+            ICertID id = SignTestPortUtil.GenerateCertificateId(issuerCert, checkCert.GetSerialNumber(), BOUNCY_CASTLE_FACTORY
+                .CreateCertificateID().GetHashSha1());
+            TestOcspResponseBuilder builder = issuerIdToResponseBuilder.Get(issuerCert.GetSerialNumber().ToString(16));
+            if (builder == null)
+            {
+                return null;
+                throw new ArgumentException("This TestOcspClient instance is not capable of providing OCSP response for the given issuerCert:"
+                     + issuerCert.GetSubjectDN().ToString());
+            }
+            bytes = builder.MakeOcspResponse(SignTestPortUtil.GenerateOcspRequestWithNonce(id).GetEncoded());
+        }
+        catch (Exception ignored)
+        {
+            if (ignored is Exception)
+            {
+                throw (Exception)ignored;
+            }
+        }
+        return bytes;
+    }
+}
+
+public class TestOcspResponseBuilder
+{
+    private static readonly IBouncyCastleFactory FACTORY = BouncyCastleFactoryCreator.GetFactory();
+    private const String SIGN_ALG = "SHA256withRSA";
+
+    private IBasicOcspRespGenerator responseBuilder;
+
+    private IX509Certificate issuerCert;
+    private IPrivateKey issuerPrivateKey;
+
+    private ICertStatus certificateStatus;
+
+    private DateTime thisUpdate = TimeTestUtil.TEST_DATE_TIME.AddDays(-1);
+
+    private DateTime nextUpdate = TimeTestUtil.TEST_DATE_TIME.AddDays(30);
+
+    private DateTime producedAt = TimeTestUtil.TEST_DATE_TIME;
+
+    private IX509Certificate[] chain;
+
+    private bool chainSet = false;
+
+    public TestOcspResponseBuilder(IX509Certificate issuerCert, IPrivateKey issuerPrivateKey,
+        ICertStatus certificateStatus)
+    {
+        this.issuerCert = issuerCert;
+        this.issuerPrivateKey = issuerPrivateKey;
+        this.certificateStatus = certificateStatus;
+        IX500Name subjectDN = issuerCert.GetSubjectDN();
+        responseBuilder = FACTORY.CreateBasicOCSPRespBuilder(FACTORY.CreateRespID(subjectDN));
+    }
+
+    public TestOcspResponseBuilder(IX509Certificate issuerCert, IPrivateKey issuerPrivateKey)
+        : this(issuerCert, issuerPrivateKey, FACTORY.CreateCertificateStatus().GetGood())
+    {
+    }
+
+    public IX509Certificate GetIssuerCert()
+    {
+        return issuerCert;
+    }
+
+    public virtual void SetCertificateStatus(ICertStatus certificateStatus)
+    {
+        this.certificateStatus = certificateStatus;
+    }
+
+    public virtual void SetThisUpdate(DateTime thisUpdate)
+    {
+        this.thisUpdate = thisUpdate;
+    }
+
+    public virtual void SetNextUpdate(DateTime nextUpdate)
+    {
+        this.nextUpdate = nextUpdate;
+    }
+
+    public virtual void SetProducedAt(DateTime producedAt)
+    {
+        this.producedAt = producedAt;
+    }
+
+    public virtual byte[] MakeOcspResponse(byte[] requestBytes)
+    {
+        IBasicOcspResponse ocspResponse = MakeOcspResponseObject(requestBytes);
+        return ocspResponse.GetEncoded();
+    }
+
+    public virtual IBasicOcspResponse MakeOcspResponseObject(byte[] requestBytes)
+    {
+        IOcspRequest ocspRequest = FACTORY.CreateOCSPReq(requestBytes);
+        IReq[] requestList = ocspRequest.GetRequestList();
+
+        IX509Extension extNonce = ocspRequest.GetExtension(FACTORY.CreateOCSPObjectIdentifiers()
+            .GetIdPkixOcspNonce());
+        if (!FACTORY.IsNullExtension(extNonce))
+        {
+            // TODO ensure
+            IX509Extensions responseExtensions = FACTORY.CreateExtensions(new Dictionary<IDerObjectIdentifier, IX509Extension>() {
+                {
+                    FACTORY.CreateOCSPObjectIdentifiers().GetIdPkixOcspNonce(), extNonce
+                }});
+            responseBuilder.SetResponseExtensions(responseExtensions);
+        }
+
+        foreach (IReq req in requestList)
+        {
+            responseBuilder.AddResponse(req.GetCertID(), certificateStatus, thisUpdate.ToUniversalTime(), nextUpdate.ToUniversalTime(),
+                FACTORY.CreateExtensions());
+        }
+
+        if (!chainSet)
+        {
+            chain = new IX509Certificate[] { issuerCert };
+        }
+        return responseBuilder.Build(FACTORY.CreateContentSigner(SIGN_ALG, issuerPrivateKey), chain, producedAt);
+    }
+
+    public void SetOcspCertsChain(IX509Certificate[] ocspCertsChain)
+    {
+        chain = ocspCertsChain;
+        chainSet = true;
+    }
+}
+
+public class SignTestPortUtil
+{
+    private static readonly IBouncyCastleFactory FACTORY = BouncyCastleFactoryCreator.GetFactory();
+
+    public static ICertID GenerateCertificateId(IX509Certificate issuerCert, IBigInteger serialNumber, String hashAlgorithm)
+    {
+        return FACTORY.CreateCertificateID(hashAlgorithm, issuerCert, serialNumber);
+    }
+
+    public static IOcspRequest GenerateOcspRequestWithNonce(ICertID id)
+    {
+        IOcspReqGenerator gen = FACTORY.CreateOCSPReqBuilder();
+        gen.AddRequest(id);
+
+        // create details for nonce extension
+        IDictionary extensions = new Hashtable();
+
+        extensions[FACTORY.CreateOCSPObjectIdentifiers().GetIdPkixOcspNonce()] = FACTORY.CreateExtension(false,
+            FACTORY.CreateDEROctetString(FACTORY.CreateDEROctetString(PdfEncryption.GenerateNewDocumentId()).GetEncoded()));
+
+        gen.SetRequestExtensions(FACTORY.CreateExtensions(extensions));
+        return gen.Build();
+    }
+
+    //public static IDigest GetMessageDigest(String hashAlgorithm)
+    //{
+    //    return FACTORY.CreateIDigest(hashAlgorithm);
+    //}
+
+    public static IX509Crl ParseCrlFromStream(Stream input)
+    {
+        return FACTORY.CreateX509Crl(input);
+    }
+
+    public static IRsaKeyPairGenerator BuildRSA2048KeyPairGenerator()
+    {
+        return FACTORY.CreateRsa2048KeyPairGenerator();
+    }
+
+    public static T GetFirstElement<T>(ICollection<T> collection)
+    {
+        return collection.First();
+    }
+}

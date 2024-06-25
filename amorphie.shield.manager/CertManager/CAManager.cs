@@ -31,7 +31,7 @@ public class CaManager
             request.CertificateExtensions.Add(
                 new X509BasicConstraintsExtension(true, true, 0, true));
 
-            request.CertificateExtensions.Add(CertificateManager.GenerateOcsp());
+            request.CertificateExtensions.Add(CertificateUtil.GenerateOcsp());
 
             // Self-sign the certificate request
             var certificate = request.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(10));

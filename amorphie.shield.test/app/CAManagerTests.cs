@@ -20,7 +20,7 @@ public class CaManagerTests
         File.WriteAllBytes($"{StaticData.CaCertBasePath}{name}.pfx", caPfx);
         File.WriteAllText($"{StaticData.CaCertBasePath}{name}.cer", caCerPem);
 
-        var privateKey = result.GetRSAPrivateKey()?.ExportPrivateKey();
+        var privateKey = result.GetRSAPrivateKey()?.ExportRSAPrivateKeyPem();
         File.WriteAllText($"{StaticData.CaCertBasePath}{name}.private.key", privateKey);
 
         var publicKey = result.GetRSAPrivateKey()?.ExportRSAPublicKeyPem();

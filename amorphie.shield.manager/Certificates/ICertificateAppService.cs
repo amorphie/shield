@@ -11,4 +11,6 @@ public interface ICertificateAppService
     Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXTokenIdAsync(string userTckn, Guid xTokenId);
     Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, string xDeviceId);
     Task<Response<CertificateQueryByDeviceOutputDto>> GetByDeviceIdAsync(string xDeviceId);
+
+    Task<Response<ClientCertificateSaveOutputDto>> SaveClientCertAsync(ClientCertificateSaveInputDto input);
 }

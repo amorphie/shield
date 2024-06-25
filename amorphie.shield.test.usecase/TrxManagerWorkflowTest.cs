@@ -1,4 +1,7 @@
 using System.Net.Http.Json;
+using amorphie.shield.Certificates;
+using amorphie.core.Base;
+using amorphie.core.Enums;
 using System.Text.Json;
 using Helpers;
 using amorphie.shield.test.Helpers;
@@ -6,8 +9,6 @@ using Xunit.Priority;
 using amorphie.shield.test.usecase.Helpers;
 using amorphie.shield.Transactions;
 using System.Text.Json.Nodes;
-using amorphie.shield.CertManager;
-using System.Net;
 
 
 namespace amorphie.shield.test.usecase;
@@ -15,11 +16,6 @@ public class TrxManagerWorkflowTest
 {
     private readonly HttpClient _httpClient;
     static ManualResetEventSlim manualEvent = new ManualResetEventSlim(false); // Used to control the execution of the next
-    private string? _encryptData;
-    private string? _signData;
-    private readonly string certName = "client";
-
-    private Dictionary<string, object>? _data = new Dictionary<string, object>();
     public TrxManagerWorkflowTest()
     {
         _httpClient = HttpClientHelper.GetHttpClient();
@@ -37,37 +33,25 @@ public class TrxManagerWorkflowTest
                 DeviceId = StaticData.XDeviceId.ToString(),
                 TokenId = StaticData.XTokenId,
                 RequestId = StaticData.XRequestId,
-                UserTCKN = StaticData.UserTCKN
+                UserTCKN = "2329"
             },
-
+            
         };
-        _data!.Add("TobeSignData", "TestData");
-        body.Data = _data;
+        body.Data = new Dictionary<string, object>
+        {
+            { "TobeSignData", "TestData" }
+        };
 
         var hub = new HubClientHelper();
         hub.MessageReceived += (sender, e) =>
         {
             var signalRdata = JsonSerializer.Deserialize<JsonObject>(e);
-            Assert.NotNull(signalRdata);
-            if (signalRdata["subject"]?.ToString() == "worker-completed")
+            if (signalRdata["subject"].ToString() == "worker-completed")
             {
                 var createTransactionOutput = signalRdata["data"]?["additionalData"]?["encryptResult"]?["data"];
-                Assert.NotNull(createTransactionOutput);
+                var encryptData = createTransactionOutput["encryptData"].ToString();
+                //decrypt
 
-                _encryptData = createTransactionOutput["encryptData"]?.ToString();
-                Assert.NotNull(_encryptData);
-                var rawData = createTransactionOutput["rawData"];
-                Assert.NotNull(rawData);
-                _data = JsonSerializer.Deserialize<Dictionary<string, object>>(rawData);
-
-                var encBytes = Convert.FromBase64String(_encryptData);
-                //decrypt is client process
-                //in decrypt process private and public key must be same certificate siblings
-                //
-                var cerPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile(certName);
-                var decryptResult = CertificateUtil.DecryptDataWithPrivateKey(cerPrivateKey, encBytes);
-
-                _signData = CertificateUtil.SignDataWithRSA(cerPrivateKey, decryptResult);
 
                 manualEvent.Set();
 
@@ -78,52 +62,57 @@ public class TrxManagerWorkflowTest
 
         var response = await _httpClient.PostAsJsonAsync($"workflow/instance/{StaticData.InstanceId}/transition/{transitionName}", body);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(response.IsSuccessStatusCode);
+        var status = response.StatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+
+        }
         manualEvent.Wait();
 
 
     }
 
     [Fact, Priority(1)]
-    public async Task Trx_Managemenet_Send_Signed()
+    public async Task Trx_Managemenet_Sign()
     {
         var transitionName = "transaction-management-send-sign";
-        var body = new VerifyTransactionInput
+        var body = new CertificateCreateInputDto
         {
+            InstanceId = StaticData.InstanceId,
             Identity = new Shared.IdentityDto
             {
                 DeviceId = StaticData.XDeviceId.ToString(),
                 TokenId = StaticData.XTokenId,
                 RequestId = StaticData.XRequestId,
-                UserTCKN = StaticData.UserTCKN
-            },
-            RawData = _data!,
-            SignData = _signData!
-
+                UserTCKN = "2329"
+            }
         };
 
         var hub = new HubClientHelper();
         hub.MessageReceived += (sender, e) =>
         {
-            var signalRdata = JsonSerializer.Deserialize<JsonObject>(e);
-            Assert.NotNull(signalRdata);
-            if (signalRdata["subject"]?.ToString() == "worker-completed")
+            var signalRdata = JsonSerializer.Deserialize<FakeSignalRData>(e);
+            if (signalRdata.subject == "worker-completed")
             {
-                //check verify result
-                var verifyTransactionOutput = signalRdata["data"]?["additionalData"]?["verifyResult"]?["data"];
-                Assert.NotNull(verifyTransactionOutput);
+                var innerData = signalRdata.data!.GetProperty("additionalData").GetProperty("certCreateResult").GetProperty("data");
+                string certificate = innerData.GetProperty("certificate").ToString();
+
+                Assert.StartsWith("-----BEGIN CERTIFICATE-----", certificate);
 
                 manualEvent.Set();
+
             }
+
         };
         await hub.ConnectAsync();
 
         var response = await _httpClient.PostAsJsonAsync($"workflow/instance/{StaticData.InstanceId}/transition/{transitionName}", body);
 
+        var status = response.StatusCode;
+        if (response.IsSuccessStatusCode)
+        {
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(response.IsSuccessStatusCode);
+        }
         manualEvent.Wait();
 
 

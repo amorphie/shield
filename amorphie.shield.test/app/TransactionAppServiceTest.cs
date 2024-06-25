@@ -9,16 +9,15 @@ public class TransactionAppServiceTest
 {
     private readonly ITransactionAppService _transactionAppService;
     private readonly ICertificateAppService _certificateAppService;
-    private readonly CertificateManager _certificateManager;
+    private readonly string certName = "client";
 
     public TransactionAppServiceTest(
         ITransactionAppService transactionAppService,
-        ICertificateAppService certificateAppService,
-        CertificateManager certificateManager)
+        ICertificateAppService certificateAppService
+        )
     {
         _transactionAppService = transactionAppService;
         _certificateAppService = certificateAppService;
-        _certificateManager = certificateManager;
     }
 
     [Fact]
@@ -50,11 +49,11 @@ public class TransactionAppServiceTest
     public async Task Assert_Transaction_Verify_Async()
     {
 
-        var cerRSAPublicKey = CertificateHelper.GetClientPublicKeyFromFile();
+        var cerRSAPublicKey = CertificateHelper.GetClientPublicKeyFromFile(certName);
 
         Assert.NotNull(cerRSAPublicKey);
 
-        var cerPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile();
+        var cerPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile(certName);
         Assert.NotNull(cerPrivateKey);
 
 
@@ -73,13 +72,13 @@ public class TransactionAppServiceTest
         Assert.Equal("Success", transactionCreateResponse.Result.Status);
 
         //Data decrypt
-        var decryptData = _certificateManager.Decrypt(
+        var decryptData = CertificateUtil.DecryptDataWithPrivateKey(
             cerPrivateKey,
-            transactionCreateResponse.Data.EncryptData
+            Convert.FromBase64String(transactionCreateResponse.Data.EncryptData)
         );
 
         //Data signed
-        var signedData = _certificateManager.Signed(
+        var signedData = CertificateUtil.SignDataWithRSA(
             cerPrivateKey,
             decryptData
         );

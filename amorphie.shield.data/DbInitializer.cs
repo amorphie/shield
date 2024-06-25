@@ -26,7 +26,8 @@ public static class DbInitializer
             "54564564545",
             "5456464564564",
             "5645465456456",
-            DateTime.UtcNow.AddDays(1 * 10)
+            DateTime.UtcNow.AddDays(1 * 10),
+            CertificateOrigin.Server
         )
         {
             CreatedAt = DateTime.UtcNow,

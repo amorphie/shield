@@ -24,10 +24,10 @@ public static class ServiceCollectionExtensions
         }
 
         // await builder.Configuration.AddVaultSecrets("amorphie-secretstore", new string[] { "amorphie-shield" });
-        // var postgreSql = builder.Configuration["shielddb"];
+        var postgreSql = builderConfiguration["shielddb"];
         //TODO: Remove
-        var postgreSql =
-            "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
+        //var postgreSql =
+        //    "Host=localhost:5432;Database=shieldDb;Username=postgres;Password=postgres;Include Error Detail=true;";
 
         services.AddDbContext<ShieldDbContext>
             (options => {
@@ -101,10 +101,11 @@ public static class ServiceCollectionExtensions
         return services;
     }
     
-    public static IServiceCollection RegisterServices(this IServiceCollection services)
+    public static IServiceCollection RegisterServices(this IServiceCollection services, ConfigurationManager configuration)
     {
         services.AddDataServices();
-        services.AddManagerServices();
+        services.AddManagerServices(configuration);
         return services;
-    }
+    }    
+
 }

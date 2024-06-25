@@ -20,10 +20,18 @@ public class CertificateRepository
             .FirstAsync(p => p.Identity.DeviceId == deviceId && p.Identity.UserTCKN == userTckn && p.Status == CertificateStatus.Active,
                 cancellationToken);
     }
-    
+
+    public async Task<Certificate> FindClientsPublicKeyByDeviceAndUserActiveAsync(string deviceId, string? userTckn, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Certificates
+            .Include(i => i.Identity)
+            .FirstAsync(p => p.Identity.DeviceId == deviceId && p.Identity.UserTCKN == userTckn && p.Status == CertificateStatus.Active && p.Origin == CertificateOrigin.Client,
+                cancellationToken);
+    }
+
     public async Task<Certificate> GetActiveAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var certificate =  await _dbContext.Certificates
+        var certificate = await _dbContext.Certificates
             .Include(i => i.Identity)
             .FirstOrDefaultAsync(p => p.Id == id && p.Status == CertificateStatus.Active,
                 cancellationToken);
@@ -35,10 +43,10 @@ public class CertificateRepository
 
         throw new EntityNotFoundException(typeof(Certificate), id, "Certificate not found");
     }
-    
+
     public async Task<Certificate> GetByTokenAsync(Guid tokenId, CancellationToken cancellationToken = default)
     {
-        var certificate =  await _dbContext.Certificates
+        var certificate = await _dbContext.Certificates
             .Include(i => i.Identity)
             .FirstOrDefaultAsync(p => p.Identity.TokenId == tokenId && p.Status == CertificateStatus.Active,
                 cancellationToken);
@@ -50,10 +58,10 @@ public class CertificateRepository
 
         throw new EntityNotFoundException(typeof(Certificate), tokenId, "Token certificate not found");
     }
-    
+
     public async Task<Certificate> GetByDeviceAsync(string deviceId, CancellationToken cancellationToken = default)
     {
-        var certificate =  await _dbContext.Certificates
+        var certificate = await _dbContext.Certificates
             .Include(i => i.Identity)
             .FirstOrDefaultAsync(p => p.Identity.DeviceId == deviceId && p.Status == CertificateStatus.Active,
                 cancellationToken);
@@ -65,10 +73,10 @@ public class CertificateRepository
 
         throw new EntityNotFoundException(typeof(Certificate), deviceId, "Device certificate not found");
     }
-    
+
     public async Task<Certificate> GetByUserAsync(string userTckn, CancellationToken cancellationToken = default)
     {
-        var certificate =  await _dbContext.Certificates
+        var certificate = await _dbContext.Certificates
             .Include(i => i.Identity)
             .FirstOrDefaultAsync(p => p.Identity.UserTCKN.ToString() == userTckn && p.Status == CertificateStatus.Active,
                 cancellationToken);
@@ -88,7 +96,7 @@ public class CertificateRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
         return certificate;
     }
-    
+
     public async Task<Certificate> UpdateAsync(Certificate certificate,
         CancellationToken cancellationToken = default)
     {

@@ -12,13 +12,15 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         await builder.Configuration.AddVaultSecrets("shield-secretstore", new[] { "shield-secretstore" });
+        builder.RegisterOptions();
 
         builder.Services.RegisterDbContext(builder.Configuration);
         builder.Services.RegisterApiVersioning();
         builder.Services.RegisterSwagger();
         builder.Services.RegisterShieldCore();
-        builder.Services.RegisterServices();
+        builder.Services.RegisterServices(builder.Configuration);
         builder.Services.RegisterExceptionHandling();
+        
         builder.Services.AddHealthChecks();
         var app = builder.Build();
         app.UseDbMigrate();

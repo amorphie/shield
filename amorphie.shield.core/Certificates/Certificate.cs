@@ -33,7 +33,12 @@ public sealed class Certificate : EntityBase
     /// <summary>
     /// Active, Passive, Revoked
     /// </summary>
-    public CertificateStatus Status { get; private set; } = default!;
+    public CertificateStatus Status { get; private set; } = default!; 
+    
+    /// <summary>
+    /// Server, Client
+    /// </summary>
+    public CertificateOrigin Origin { get; private set; } = default!;
     /// <summary>
     /// Status Reason
     /// </summary>
@@ -67,7 +72,8 @@ public sealed class Certificate : EntityBase
         string serialNumber,
         string publicCert,
         string? thumbprint,
-        DateTime expirationDate
+        DateTime expirationDate,
+        CertificateOrigin origin
     )
     {
         Cn = cn;
@@ -81,6 +87,7 @@ public sealed class Certificate : EntityBase
         PublicCert = publicCert;
         ThumbPrint = thumbprint;
         ExpirationDate = expirationDate;
+        Origin = origin;
     }
 
     public void Active(){

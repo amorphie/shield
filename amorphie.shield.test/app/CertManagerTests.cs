@@ -8,6 +8,8 @@ namespace amorphie.shield.test;
 public class CertManagerTests
 {
     private readonly string password = "password";
+    private readonly string certName = "subclient_vault";
+
 
     [Fact]
     public void Create_ReturnsCert_WhenCertCreated()
@@ -15,7 +17,7 @@ public class CertManagerTests
 
         ICaManager caManager = new FileCaManager();
         var certManager = new CertificateManager(caManager);
-        var result = certManager.CreateAsync("", "testCert", password);
+        var result = certManager.CreateAsync("");
         // Assert
         Assert.NotNull(result);
         Assert.IsType<X509Certificate2>(result);
@@ -26,72 +28,72 @@ public class CertManagerTests
     {
 
         var caBasePath = Path.Combine("c:\\cert\\client\\");
-        var name = "client";
         ICaManager caManager = new FileCaManager();
         var certManager = new CertificateManager(caManager);
-        var result = await certManager.CreateAsync("aclientofburgan", "testCert", password);
+        var result = await certManager.CreateAsync("AClientOfBurgan");
 
 
         var caCerPem = result.ExportCertificatePem();
         var caPfx = result.Export(X509ContentType.Pkcs12, password);
-        await File.WriteAllBytesAsync($"{caBasePath}{name}.pfx", caPfx);
-        await File.WriteAllTextAsync($"{caBasePath}{name}.cer", caCerPem);
+        await File.WriteAllBytesAsync($"{caBasePath}{certName}.pfx", caPfx);
+        await File.WriteAllTextAsync($"{caBasePath}{certName}.cer", caCerPem);
 
         var privateKey = result.GetRSAPrivateKey()?.ExportPrivateKey();
-        await File.WriteAllTextAsync($"{caBasePath}{name}.private.key", privateKey);
+        await File.WriteAllTextAsync($"{caBasePath}{certName}.private.key", privateKey);
 
         var publicKey = result.GetRSAPrivateKey()?.ExportSubjectPublicKeyInfoPem();
         //var iseq = pk.Equals(publicKey);
-        await File.WriteAllTextAsync($"{caBasePath}{name}.public.key", publicKey);
+        await File.WriteAllTextAsync($"{caBasePath}{certName}.public.key", publicKey);
 
         // Assert
         Assert.NotNull(result);
         Assert.IsType<X509Certificate2>(result);
     }
     [Fact]
-    public async Task Enc_Dec_Sign_Verify_With_NewCert()
+    public async Task Enc_Dec_Sign_Verify_Using_NewGeneratedCert()
     {
         ICaManager caManager = new FileCaManager();
         var certManager = new CertificateManager(caManager);
-        var result = await certManager.CreateAsync("", "testCert", password);
-        var cerRSAPublicKey = certManager.GetRSAPublicKeyFromCertificate(result);
+        var result = await certManager.CreateAsync("");
+        var cerRSAPublicKey = CertificateUtil.GetRSAPublicKeyFromCertificate(result);
         var cerPrivateKey = result.GetRSAPrivateKey().ExportRSAPrivateKeyPem();
         var dataTobeEnc = "ibra";
 
-        var encResult = CertificateManager.EncryptDataWithPublicKey(cerRSAPublicKey, dataTobeEnc);
+        var encResult = CertificateUtil.EncryptDataWithPublicKey(cerRSAPublicKey, dataTobeEnc);
 
         var encBytes = Convert.FromBase64String(encResult);
 
-        var decryptResult = CertificateManager.DecryptDataWithPrivateKey(encBytes, cerPrivateKey);
+        var decryptResult = CertificateUtil.DecryptDataWithPrivateKey(cerPrivateKey, encBytes);
 
-        var signedData = CertificateManager.SignDataWithRSA(decryptResult, cerPrivateKey);
-        var verify = CertificateManager.Verify(decryptResult, signedData, cerRSAPublicKey);
+        var signedData = CertificateUtil.SignDataWithRSA(cerPrivateKey, decryptResult);
+        var verify = CertificateUtil.Verify(cerRSAPublicKey, decryptResult, signedData);
         // Assert
         Assert.NotNull(result);
         Assert.IsType<X509Certificate2>(result);
     }
 
     [Fact]
-    public async Task Enc_Dec_Sign_Verify_With_ExistingCert()
+    public async Task Enc_Dec_Sign_Verify_Using_ExistingCert()
     {
-        var cerRSAPublicKey = CertificateHelper.GetClientPublicKeyFromFile();
+        var cerRSAPublicKey = CertificateHelper.GetClientPublicKeyFromFile(certName);
 
-        var cerPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile();
+        var cerPrivateKey = CertificateHelper.GetClientPrivateKeyFromFile(certName);
         var dataTobeEnc = "ibra";
 
-        var encResult = CertificateManager.EncryptDataWithPublicKey(cerRSAPublicKey, dataTobeEnc);
+        var encResult = CertificateUtil.EncryptDataWithPublicKey(cerRSAPublicKey, dataTobeEnc);
 
         var encBytes = Convert.FromBase64String(encResult);
 
-        var decryptResult = CertificateManager.DecryptDataWithPrivateKey(encBytes, cerPrivateKey);
+        var decryptResult = CertificateUtil.DecryptDataWithPrivateKey(cerPrivateKey, encBytes);
 
-        var signedData = CertificateManager.SignDataWithRSA(decryptResult, cerPrivateKey);
-        var verify = CertificateManager.Verify(decryptResult, signedData, cerRSAPublicKey);
+        var signedData = CertificateUtil.SignDataWithRSA(decryptResult, cerPrivateKey);
+        var verify = CertificateUtil.Verify(cerRSAPublicKey,decryptResult, signedData);
         // Assert
         Assert.NotNull(decryptResult);
         Assert.Equal(dataTobeEnc, decryptResult);
         Assert.True(verify);
     }
+
 
 }
 

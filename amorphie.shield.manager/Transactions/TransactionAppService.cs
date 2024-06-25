@@ -9,16 +9,13 @@ public class TransactionAppService : ITransactionAppService
 {
     private readonly CertificateRepository _certificateRepository;
     private readonly TransactionRepository _transactionRepository;
-    private readonly CertificateManager _certificateManager;
 
     public TransactionAppService(
         CertificateRepository certificateRepository,
-        TransactionRepository transactionRepository,
-        CertificateManager certificateManager)
+        TransactionRepository transactionRepository)
     {
         _certificateRepository = certificateRepository;
         _transactionRepository = transactionRepository;
-        _certificateManager = certificateManager;
     }
 
     public async Task<Response<CreateTransactionOutput>> CreateAsync(CreateTransactionInput input,
@@ -35,28 +32,27 @@ public class TransactionAppService : ITransactionAppService
             JsonSerializer.Serialize(input.Data)
         );
 
-        var encryptedData = CertificateManager.EncryptDataWithPublicKey(certificate.PublicCert, transaction.Data);
+        var encryptedData = CertificateUtil.EncryptDataWithPublicKey(certificate.PublicCert, transaction.Data);
         await _transactionRepository.InsertAsync(transaction, cancellationToken);
         return Response<CreateTransactionOutput>.Success(
             "success",
             new CreateTransactionOutput(transaction.Id, input.Data, encryptedData)
         );
     }
-
     public async Task<Response<VerifyTransactionOutput>> VerifyAsync(Guid transactionId,
         VerifyTransactionInput input, CancellationToken cancellationToken = default)
     {
         var transaction = await _transactionRepository.GetAsync(transactionId, cancellationToken);
-        var certificate = await _certificateRepository.FindByDeviceAndUserActiveAsync(
+        var certificate = await _certificateRepository.FindClientsPublicKeyByDeviceAndUserActiveAsync(
             input.Identity.DeviceId,
             input.Identity.UserTCKN, 
             cancellationToken
             );
         
-        var isVerify = CertificateManager.Verify(
+        var isVerify = CertificateUtil.Verify(
+            certificate.PublicCert,
             transaction.Data,
-            input.SignData,
-            certificate.PublicCert
+            input.SignData
         );
 
         if (!isVerify)

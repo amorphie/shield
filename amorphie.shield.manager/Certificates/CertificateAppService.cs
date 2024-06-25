@@ -10,12 +10,12 @@ public class CertificateAppService : ICertificateAppService
 {
     private readonly CertificateRepository _certificateRepository;
     private readonly DbSet<Certificate> _dbSet;
-    private readonly CertificateManager _certificateManager;
+    private readonly ICertificateManager _certificateManager;
 
     public CertificateAppService(
         ShieldDbContext dbContext,
         CertificateRepository certificateRepository,
-        CertificateManager certificateManager)
+        ICertificateManager certificateManager)
     {
         _dbSet = dbContext.Set<Certificate>();
         _certificateRepository = certificateRepository;
@@ -24,22 +24,20 @@ public class CertificateAppService : ICertificateAppService
 
     public async Task<Response<CertificateCreateOutputDto>> CreateAsync(CertificateCreateInputDto input)
     {
-        var certificate = await _certificateManager.CreateAsync(
-            input.Identity.UserTCKN,
-            "testClient",
-            "password");
+        var certificate = await _certificateManager.CreateAsync(input.Identity.UserTCKN!);
 
         var certEntity = new Certificate(
             cn: certificate.CN(),
             deviceId: input.Identity.DeviceId,
             tokenId: input.Identity.TokenId,
             requestId: input.Identity.RequestId,
-            userTckn: input.Identity.UserTCKN,
+            userTckn: input.Identity.UserTCKN!,
             instanceId: input.InstanceId,
             serialNumber: certificate.SerialNumber().ToString(),
-            publicCert: _certificateManager.GetRSAPublicKeyFromCertificate(certificate),
+            publicCert: CertificateUtil.GetRSAPublicKeyFromCertificate(certificate),
             thumbprint: certificate.Thumbprint,
-            expirationDate: certificate.NotAfter.ToUniversalTime()
+            expirationDate: certificate.NotAfter.ToUniversalTime(),
+            origin: CertificateOrigin.Server
         );
 
         certEntity.Active();
@@ -49,7 +47,7 @@ public class CertificateAppService : ICertificateAppService
         {
             Id = certEntity.Id,
             Certificate = certificate.ExportCer(),
-            PrivateKey = certificate.GetRSAPrivateKey()?.ExportPrivateKey(),
+            PrivateKey = certificate.GetRSAPrivateKey()?.ExportRSAPrivateKeyPem(),
             ExpirationDate = certificate.NotAfter.ToUniversalTime()
         });
     }
@@ -122,4 +120,33 @@ public class CertificateAppService : ICertificateAppService
 
         throw new BusinessException(code: 500, severity: "warning", message: "Business Error", details: "Unproccesable status for user certificate");
     }
+
+    #region Client Cert
+
+    public async Task<Response<ClientCertificateSaveOutputDto>> SaveClientCertAsync(ClientCertificateSaveInputDto input)
+    {
+        var certEntity = new Certificate(
+            cn: input.CommonName,
+            deviceId: input.Identity.DeviceId,
+            tokenId: input.Identity.TokenId,
+            requestId: input.Identity.RequestId,
+            userTckn: input.Identity.UserTCKN!,
+            instanceId: input.InstanceId,
+            serialNumber: input.SerialNumber,
+            publicCert: input.PublicKey,
+            thumbprint: input.Thumbprint,
+            expirationDate: input.ExpirationDate,
+            origin: CertificateOrigin.Client
+        );
+
+        certEntity.Active();
+        await _certificateRepository.InsertAsync(certEntity);
+
+        return Response<ClientCertificateSaveOutputDto>.Success("", new ClientCertificateSaveOutputDto
+        {
+            Id = certEntity.Id
+        });
+    }
+
+    #endregion
 }

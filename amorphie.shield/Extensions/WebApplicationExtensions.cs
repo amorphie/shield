@@ -1,7 +1,6 @@
 using amorphie.shield.Module;
 using Asp.Versioning.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
-
 namespace amorphie.shield.Extensions;
 
 public static class WebApplicationExtensions
@@ -54,4 +53,5 @@ public static class WebApplicationExtensions
         app.RegisterRevokeModuleEndpoints();
         app.RegisterTransactionModuleEndpoints();
     }
+
 }
