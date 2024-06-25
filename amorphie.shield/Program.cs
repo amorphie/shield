@@ -1,8 +1,6 @@
 using amorphie.core.Extension;
 using amorphie.shield.Extensions;
-using Dapr.Client;
 using Prometheus;
-using static amorphie.core.Extension.VaultConfigExtension;
 
 namespace amorphie.shield;
 public class Program
@@ -14,14 +12,7 @@ public class Program
         await builder.Configuration.AddVaultSecrets("shield-secretstore", new[] { "shield-secretstore" });
         builder.RegisterOptions();
 
-        builder.Services.RegisterDbContext(builder.Configuration);
-        builder.Services.RegisterApiVersioning();
-        builder.Services.RegisterSwagger();
         builder.Services.RegisterShieldCore();
-        builder.Services.RegisterServices(builder.Configuration);
-        builder.Services.RegisterExceptionHandling();
-        
-        builder.Services.AddHealthChecks();
         var app = builder.Build();
         app.UseDbMigrate();
         app.UseRouting();
@@ -30,10 +21,14 @@ public class Program
         app.UseExceptionHandler();
         app.AddRoutes();
         app.AddModuleEndpoints();
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions(){
+            Predicate = _ => true,
+            AllowCachingResponses = false,
+            ResponseWriter = HealthCheckOptionsExtensions.WriteResponse
+        });
 
         app.MapMetrics();
 
-        app.Run();
+        await app.RunAsync();
     }
 }
