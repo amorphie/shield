@@ -12,7 +12,7 @@ public class Program
         await builder.Configuration.AddVaultSecrets("shield-secretstore", new[] { "shield-secretstore" });
         builder.RegisterOptions();
 
-        builder.Services.RegisterShieldCore();
+        builder.Services.RegisterShieldCore(builder.Configuration);
         var app = builder.Build();
         app.UseDbMigrate();
         app.UseRouting();

@@ -76,7 +76,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection RegisterShieldCore(this IServiceCollection services)
+    public static IServiceCollection RegisterShieldCore(this IServiceCollection services, ConfigurationManager configuration)
     {
         // If you use AutoInclude in context you should add  ReferenceHandler.IgnoreCycles to avoid circular load
         services.Configure<JsonOptions>(options =>
@@ -88,7 +88,7 @@ public static class ServiceCollectionExtensions
         services.RegisterDbContext();
         services.RegisterApiVersioning();
         services.RegisterSwagger();
-        services.RegisterServices();
+        services.RegisterServices(configuration);
         services.RegisterExceptionHandling();
         services.RegisterHealthCheck();
 
