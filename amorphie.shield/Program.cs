@@ -9,7 +9,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        await builder.Configuration.AddVaultSecrets("shield-secretstore", new[] { "shield-secretstore" });
+        await builder.Configuration.AddVaultSecrets("amorphie-shield", new[] { "amorphie-shield" });
         builder.RegisterOptions();
 
         builder.Services.RegisterShieldCore(builder.Configuration);

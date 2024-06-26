@@ -80,7 +80,7 @@ public static class ServiceCollectionExtensions
             options.SerializerOptions.WriteIndented = true;
         });
         services.AddDaprClient();
-        string connStr = configuration["shielddb"] ?? throw new KeyNotFoundException("Connection string expected");
+        string connStr = configuration["DatabaseConnection"] ?? throw new KeyNotFoundException("Connection string expected");
         services.RegisterDbContext(connStr);
         services.RegisterApiVersioning();
         services.RegisterSwagger();
