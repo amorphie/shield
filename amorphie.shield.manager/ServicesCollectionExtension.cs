@@ -24,9 +24,10 @@ public static class ServicesCollectionExtension
 
         // Initialize Vault Client
         var vaultAddress = configuration["Vault:Address"]; //; "http://127.0.0.1:8200";
-        var vaultToken = configuration["Vault:Token"];// "admin";//Environment.GetEnvironmentVariable("VAULT_TOKEN");
+        var vaultTokenFileName = configuration["Vault:TokenFileName"]?? throw new KeyNotFoundException("Vault token file name expected");// "admin";//Environment.GetEnvironmentVariable("VAULT_TOKEN");
+        var vaultTokenFormFile = File.ReadAllText(vaultTokenFileName) ?? throw new KeyNotFoundException("Vault token expected");
 
-        var authMethod = new TokenAuthMethodInfo(vaultToken);
+        var authMethod = new TokenAuthMethodInfo(vaultTokenFormFile);
         var vaultClientSettings = new VaultClientSettings(vaultAddress, authMethod);
         var vaultClient = new VaultClient(vaultClientSettings);
 

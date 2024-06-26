@@ -362,3 +362,4 @@ tests/collections/reports
 *.pfx
 *.pem
 *.DS_Store
+vault/secrets/token
