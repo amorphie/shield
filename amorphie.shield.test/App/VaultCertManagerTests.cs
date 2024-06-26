@@ -8,7 +8,7 @@ namespace amorphie.shield.test;
 public class VaultCertManagerTests
 {
     private readonly string password = "password";
-    private readonly string certName = "vaultclient";
+    private readonly string certName = "vaultservercert";
 
     private readonly IVaultClient _vaultClient;
     private readonly Microsoft.Extensions.Options.IOptions<VaultOptions> _options;

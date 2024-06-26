@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using amorphie.shield.Certificates;
+using amorphie.shield.Extension;
 
 namespace amorphie.shield.Module;
 
@@ -14,7 +15,7 @@ public static class CertificateModule
         group.MapGet("/status/serial/{certificateSerialNumber}/user/{userTckn}", GetBySerialAndUserTcknAsync);
         group.MapGet("/status/serial/{certificateSerialNumber}/user/{userTckn}/token/{xTokenId}", GetBySerialAndUserTcknAndXTokenIdAsync);
         group.MapGet("/status/user/{userTckn}/token/{xTokenId}", GetByUserTcknAndXTokenIdAsync);
-        group.MapGet("/status/user/{userTckn}/device/{xDeviceId}", GetByUserTcknAndXDeviceIdAsync);
+        group.MapGet("/status/user/{userTckn}/device/{xDeviceId}/{origin}", GetByUserTcknAndXDeviceIdAsync);
         group.MapGet("/status/user/device/{xDeviceId}", GetByDeviceIdAsync);
         group.MapPost("/renew", CreateAsync);
 
@@ -64,10 +65,12 @@ public static class CertificateModule
     internal static async ValueTask<IResult> GetByUserTcknAndXDeviceIdAsync(
     [FromRoute(Name = "userTckn")] string userTckn,
     [FromRoute(Name = "xDeviceId")] string xDeviceId,
+    [FromRoute(Name = "origin")] string origin,
     [FromServices] ICertificateAppService certificateService
     )
     {
-        var dbResponse = await certificateService.GetByUserTcknAndXDeviceIdAsync(userTckn, xDeviceId);
+        CertificateOrigin certificateOrigin = (CertificateOrigin)Enum.Parse(typeof(CertificateOrigin), origin.FirstCharToUpper());
+        var dbResponse = await certificateService.GetByUserTcknAndXDeviceIdAsync(userTckn, xDeviceId, certificateOrigin);
         return ApiResult.CreateResult(dbResponse);
     }
 

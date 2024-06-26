@@ -74,9 +74,9 @@ public class CertificateAppService : ICertificateAppService
         return Get(certEntity);
     }
 
-    public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, string xDeviceId)
+    public async Task<Response<CertificateQueryOutputDto>> GetByUserTcknAndXDeviceIdAsync(string userTckn, string xDeviceId, CertificateOrigin origin)
     {
-        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.DeviceId == xDeviceId && w.Status == CertificateStatus.Active);
+        var certEntity = await _dbSet.FirstOrDefaultAsync(w => w.Identity.UserTCKN == userTckn && w.Identity.DeviceId == xDeviceId && w.Status == CertificateStatus.Active && w.Origin == origin);
         return Get(certEntity);
     }
 

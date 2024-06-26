@@ -39,10 +39,8 @@ public class TransactionAppService : ITransactionAppService
             new CreateTransactionOutput(transaction.Id, input.Data, encryptedData)
         );
     }
-    public async Task<Response<VerifyTransactionOutput>> VerifyAsync(Guid transactionId,
-        VerifyTransactionInput input, CancellationToken cancellationToken = default)
+    public async Task<Response<VerifyTransactionOutput>> VerifyAsync(VerifyTransactionInput input, CancellationToken cancellationToken = default)
     {
-        var transaction = await _transactionRepository.GetAsync(transactionId, cancellationToken);
         var certificate = await _certificateRepository.FindClientsPublicKeyByDeviceAndUserActiveAsync(
             input.Identity.DeviceId,
             input.Identity.UserTCKN, 
@@ -51,7 +49,7 @@ public class TransactionAppService : ITransactionAppService
         
         var isVerify = CertificateUtil.Verify(
             certificate.PublicCert,
-            transaction.Data,
+            JsonSerializer.Serialize(input.RawData),
             input.SignData
         );
 
@@ -60,15 +58,49 @@ public class TransactionAppService : ITransactionAppService
             throw new TransactionSignedException();
         }
 
-        transaction.Verified(
-            requestId: input.Identity.RequestId,
-            payloadData: JsonSerializer.Serialize(input.RawData),
-            signSignature: input.SignData
+        var transaction = new Transaction(
+            certificate.Id,
+            null,
+            input.Identity.RequestId,
+            JsonSerializer.Serialize(input.RawData)
         );
+        await _transactionRepository.InsertAsync(transaction, cancellationToken);
 
         return Response<VerifyTransactionOutput>.Success(
             "success",
             new VerifyTransactionOutput(true)
         );
     }
+    //     public async Task<Response<VerifyTransactionOutput>> VerifyAsync(Guid transactionId,
+    //     VerifyTransactionInput input, CancellationToken cancellationToken = default)
+    // {
+    //     var transaction = await _transactionRepository.GetAsync(transactionId, cancellationToken);
+    //     var certificate = await _certificateRepository.FindClientsPublicKeyByDeviceAndUserActiveAsync(
+    //         input.Identity.DeviceId,
+    //         input.Identity.UserTCKN, 
+    //         cancellationToken
+    //         );
+        
+    //     var isVerify = CertificateUtil.Verify(
+    //         certificate.PublicCert,
+    //         transaction.Data,
+    //         input.SignData
+    //     );
+
+    //     if (!isVerify)
+    //     {
+    //         throw new TransactionSignedException();
+    //     }
+
+    //     transaction.Verified(
+    //         requestId: input.Identity.RequestId,
+    //         payloadData: JsonSerializer.Serialize(input.RawData),
+    //         signSignature: input.SignData
+    //     );
+
+    //     return Response<VerifyTransactionOutput>.Success(
+    //         "success",
+    //         new VerifyTransactionOutput(true)
+    //     );
+    // }
 }

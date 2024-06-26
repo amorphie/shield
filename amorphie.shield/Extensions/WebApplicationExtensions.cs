@@ -52,6 +52,7 @@ public static class WebApplicationExtensions
         app.RegisterCertificateModuleEndpoints();
         app.RegisterRevokeModuleEndpoints();
         app.RegisterTransactionModuleEndpoints();
+        app.RegisterClientCertificateModuleEndpoints();
     }
 
 }
