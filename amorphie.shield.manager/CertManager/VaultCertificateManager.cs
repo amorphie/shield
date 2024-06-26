@@ -9,10 +9,10 @@ public class VaultCertificateManager : ICertificateManager
 {
     private readonly IVaultClient _vaultClient;
     private readonly VaultOptions _vaultOptions;
-    public VaultCertificateManager(IVaultClient vaultClient, Microsoft.Extensions.Options.IOptions<VaultOptions> options)
+    public VaultCertificateManager(IVaultClient vaultClient, VaultOptions options)
     {
         _vaultClient = vaultClient;
-        _vaultOptions = options.Value;
+        _vaultOptions = options;
     }
     public async Task<X509Certificate2> CreateAsync(string identifier)
     {

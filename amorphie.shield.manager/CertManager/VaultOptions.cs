@@ -3,9 +3,11 @@ namespace amorphie.shield.CertManager;
 public class VaultOptions
 {
     public const string Vault = "Vault";
-    public required string CommonName { get; set; }
+    public const string VAULT_ADDR = "VAULT_ADDR";
+    public const string ROLE_NAME = "ROLE_NAME";
+    public string CommonName { get; set; } = default!;
     public int RSAKeySizeInBits { get; set; }
-    public required string RoleName { get; set; }
-    public required string TimeToLive { get; set; }
+    public string RoleName { get; set; } = default!;
+    public string TimeToLive { get; set; } = default!;
 }
 

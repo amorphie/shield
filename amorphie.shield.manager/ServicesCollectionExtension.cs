@@ -13,30 +13,31 @@ public static class ServicesCollectionExtension
 {
     public static void AddManagerServices(this IServiceCollection services, ConfigurationManager configuration)
     {
-
         services.AddScoped<ICertificateAppService, CertificateAppService>();
         services.AddScoped<IRevokeAppService, RevokeAppService>();
         services.AddSingleton<ICaManager, VaultCaManager>();
-        //services.AddScoped<ICertificateManager, CertificateManager>();
         services.AddScoped<ICertificateManager, VaultCertificateManager>();
         services.AddScoped<ITransactionAppService, TransactionAppService>();
-
-
-        // Initialize Vault Client
-        var vaultAddress = configuration["Vault:Address"]; //; "http://127.0.0.1:8200";
-        var vaultTokenFileName = configuration["Vault:TokenFileName"]?? throw new KeyNotFoundException("Vault token file name expected");// "admin";//Environment.GetEnvironmentVariable("VAULT_TOKEN");
-        var vaultTokenFormFile = File.ReadAllText(vaultTokenFileName) ?? throw new KeyNotFoundException("Vault token expected");
-
-        var authMethod = new TokenAuthMethodInfo(vaultTokenFormFile);
-        var vaultClientSettings = new VaultClientSettings(vaultAddress, authMethod);
-        var vaultClient = new VaultClient(vaultClientSettings);
-
-        services.AddScoped<IVaultClient, VaultClient>(sp => vaultClient);
+        services.AddScoped<IVaultClient, VaultClient>(sp => VaultClientCreator(configuration));
     }
 
     public static void RegisterOptions(this WebApplicationBuilder builder)
     {
-        builder.Services.Configure<VaultOptions>(builder.Configuration.GetSection(VaultOptions.Vault));
+        var vaultOptions = new VaultOptions();
+        builder.Configuration.GetSection(VaultOptions.Vault).Bind(vaultOptions);
+        vaultOptions.RoleName = builder.Configuration[VaultOptions.ROLE_NAME] ?? throw new KeyNotFoundException("Vault role name expected");
+        builder.Services.AddScoped(sp => vaultOptions);
+    }
+    public static VaultClient VaultClientCreator(ConfigurationManager configuration)
+    {
+        var vaultAddress = configuration[VaultOptions.VAULT_ADDR]; //; "http://127.0.0.1:8200";
+        var vaultTokenFileName = configuration["Vault:TokenFileName"] ?? throw new KeyNotFoundException("Vault token file name expected");// "admin";//Environment.GetEnvironmentVariable("VAULT_TOKEN");
+        var vaultTokenFormFile = File.ReadAllText(vaultTokenFileName) ?? throw new KeyNotFoundException("Vault token expected");
+        var authMethod = new TokenAuthMethodInfo(vaultTokenFormFile);
+        var vaultClientSettings = new VaultClientSettings(vaultAddress, authMethod);
+        return new VaultClient(vaultClientSettings);
     }
 }
+
+
 
