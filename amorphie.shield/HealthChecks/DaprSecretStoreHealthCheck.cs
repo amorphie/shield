@@ -5,7 +5,7 @@ namespace amorphie.shield.HealthChecks;
 
 public class DaprSecretStoreHealthCheck(DaprClient daprClient) : IHealthCheck
 {
-    internal const string Name = "amorphie-shield";
+    internal const string Name = "shield-secretstore";
     private readonly DaprClient _daprClient = daprClient ?? throw new ArgumentNullException(nameof(daprClient));
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
