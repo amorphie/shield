@@ -19,7 +19,8 @@ public sealed class Transaction : EntityBase
         Guid certificateId,
         Guid? instanceId,
         Guid requestId,
-        string payloadData
+        string payloadData,
+        TransactionType type
     )
     {
         CertificateId = certificateId;
@@ -28,6 +29,7 @@ public sealed class Transaction : EntityBase
         Data = payloadData;
         Status = TransactionStatus.Waiting;
         Activities = new Collection<TransactionActivity>();
+        Type = type;
         AddActivity(requestId, payloadData);
     }
 
@@ -71,6 +73,12 @@ public sealed class Transaction : EntityBase
     public TransactionStatus Status { get; private set; }
 
     /// <summary>
+    /// Type
+    /// Encrypted, NonEncrypted
+    /// </summary>
+    public TransactionType Type { get; private set; }
+
+    /// <summary>
     /// Activities
     /// </summary>
     public ICollection<TransactionActivity>? Activities { get; private set; }
@@ -84,7 +92,7 @@ public sealed class Transaction : EntityBase
     /// <exception cref="TransactionSignedException"></exception>
     public void Verified(Guid requestId, string payloadData, string signSignature)
     {
-        if (Status != TransactionStatus.Waiting)
+        if (Type == TransactionType.Encrypted && Status != TransactionStatus.Waiting)
         {
             throw new TransactionWaitingException();
         }
@@ -93,9 +101,9 @@ public sealed class Transaction : EntityBase
         {
             throw new TransactionSignedException();
         }
-        
+
         SignedAt = DateTime.UtcNow;
-        Status = TransactionStatus.Signed;
+        Status = TransactionStatus.Verified;
         SignSignature = signSignature;
         AddActivity(requestId, payloadData);
     }

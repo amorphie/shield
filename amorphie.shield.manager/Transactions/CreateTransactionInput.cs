@@ -34,6 +34,8 @@ public class CreateTransactionOutput
 
 public class VerifyTransactionInput
 {
+    public Guid? TransactionId { get; set; }
+
     public required IdentityDto Identity { get; set; }
 
     /// <summary>
