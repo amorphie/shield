@@ -98,8 +98,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddHealthChecks()
             .AddNpgSql(connStr, tags: new[] { "PostgresDb" })
-            .AddDapr(tags: new[] { "Dapr" })
-            .AddDaprSecretStore(tags: new[] { "shield-secretstore" })
+            // .AddDapr(tags: new[] { "Dapr" })
+            // .AddDaprSecretStore(tags: new[] { "shield-secretstore" })
             ;
 
         return services;
