@@ -9,5 +9,6 @@ public class VaultOptions
     public int RSAKeySizeInBits { get; set; }
     public string RoleName { get; set; } = default!;
     public string TimeToLive { get; set; } = default!;
+    public string PkiBackendMountPoint { get; set; } = default!;
 }
 

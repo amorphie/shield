@@ -33,8 +33,8 @@ public class VaultCertificateManager : ICertificateManager
 
             // Submit CSR to Vault for signing
             SignCertificatesRequestOptions signCertData = new SignCertificatesRequestOptions() { Csr = csr, CommonName = _vaultOptions.CommonName, TimeToLive = _vaultOptions.TimeToLive };
-            var signedCertResponse = await _vaultClient.V1.Secrets.PKI.SignCertificateAsync(_vaultOptions.RoleName, signCertData);
 
+            var signedCertResponse = await _vaultClient.V1.Secrets.PKI.SignCertificateAsync(_vaultOptions.RoleName, signCertData, _vaultOptions.PkiBackendMountPoint);
             //Create X509
             var certificate = new X509Certificate2(Encoding.UTF8.GetBytes(signedCertResponse.Data.CertificateContent));
 
